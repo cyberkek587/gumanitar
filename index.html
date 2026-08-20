@@ -88,21 +88,27 @@
       box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
     }
 
-    /* Зона загрузки */
+    /* Зона загрузки фото (100% кликабельная) */
     .upload-zone {
       border: 2px dashed var(--border);
       border-radius: var(--radius-sm);
-      padding: 18px;
+      padding: 20px;
       text-align: center;
       cursor: pointer;
       background: var(--bg);
       position: relative;
+      overflow: hidden;
+      display: block;
+    }
+    .upload-zone:hover {
+      border-color: var(--accent);
     }
     .upload-zone input[type="file"] {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       opacity: 0;
       cursor: pointer;
+      z-index: 10;
     }
 
     .photos-grid {
@@ -131,6 +137,7 @@
       height: 42px;
       border-radius: 6px;
       object-fit: cover;
+      border: 1px solid var(--border);
     }
     .photo-name {
       font-size: 13px;
@@ -147,6 +154,7 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
+      padding: 6px 8px;
     }
 
     /* ТМЦ */
@@ -235,6 +243,19 @@
       font-weight: 500;
     }
 
+    .btn-retry {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
     .bottom-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -301,12 +322,12 @@
     <div class="card">
       <div class="card-title">📄 Документы (до 5 фото)</div>
       
-      <div class="upload-zone" id="uploadZone">
+      <label class="upload-zone" id="uploadZone">
         <input type="file" id="photoInput" accept="image/*" multiple>
-        <div style="font-size: 26px; margin-bottom: 4px;">📸</div>
-        <p style="margin: 0; font-weight: 500; font-size: 14px;" id="uploadTitle">Нажмите для выбора фото</p>
+        <div style="font-size: 28px; margin-bottom: 4px;">📸</div>
+        <p style="margin: 0; font-weight: 600; font-size: 14px;" id="uploadTitle">Нажмите для выбора фото</p>
         <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--hint);">Паспорт, справка ВПЛ и др. (до 5 шт)</p>
-      </div>
+      </label>
 
       <div class="photos-grid" id="photosGrid"></div>
     </div>
@@ -314,7 +335,7 @@
     <!-- 3. Склад -->
     <div class="card">
       <div class="card-title">📦 Доступная помощь на складе</div>
-      <div id="loader" style="text-align: center; color: var(--hint); padding: 10px;">⏳ Загрузка доступных остатков...</div>
+      <div id="loader" style="text-align: center; color: var(--hint); padding: 14px;">⏳ Загрузка доступных остатков...</div>
       <div id="catalog"></div>
       <div id="err" class="alert-box"></div>
     </div>
@@ -328,32 +349,51 @@
   </div>
 
   <script>
+    // ===================================================================
+    // ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ ИЗ ШАГА 1
     const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
+    // ===================================================================
 
     const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); }
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
 
     let items = [];
     let cart = {};
-    let processedPhotos = []; // Уже сжатые в фоне фото { name, base64, thumbUrl }
-    let isCompressing = false;
+    let processedPhotos = [];
 
-    // Загрузка каталога
-    fetch(API_URL)
-      .then(r => r.json())
-      .then(res => {
-        document.getElementById("loader").style.display = "none";
-        if (res.status === "success" && res.items.length > 0) {
-          items = res.items;
-          renderCatalog();
-        } else {
-          document.getElementById("loader").innerText = "На складе сейчас нет доступных товаров.";
-          document.getElementById("submitBtn").disabled = true;
-        }
-      })
-      .catch(() => {
-        document.getElementById("loader").innerText = "Ошибка загрузки данных со склада.";
-      });
+    // Загрузка каталога с обработкой ошибок
+    function loadCatalog() {
+      const loader = document.getElementById("loader");
+      loader.style.display = "block";
+      loader.innerHTML = "⏳ Загрузка доступных остатков...";
+
+      fetch(API_URL)
+        .then(r => {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(res => {
+          loader.style.display = "none";
+          if (res.status === "success" && res.items && res.items.length > 0) {
+            items = res.items;
+            renderCatalog();
+          } else {
+            loader.innerHTML = "На складе сейчас нет доступных товаров.<br><button class='btn-retry' onclick='loadCatalog()'>🔄 Обновить</button>";
+            loader.style.display = "block";
+            document.getElementById("submitBtn").disabled = true;
+          }
+        })
+        .catch(err => {
+          loader.innerHTML = `⚠️ Ошибка связи с сервером (${err.message}).<br><button class='btn-retry' onclick='loadCatalog()'>🔄 Попробовать снова</button>`;
+          loader.style.display = "block";
+        });
+    }
+
+    // Запускаем загрузку сразу
+    loadCatalog();
 
     function renderCatalog() {
       const container = document.getElementById("catalog");
@@ -440,30 +480,35 @@
       btn.innerText = total > 0 ? `ОТПРАВИТЬ ЗАЯВКУ (${total})` : "ОТПРАВИТЬ ЗАЯВКУ";
     }
 
-    // ⚡️ Фоновое быстрое сжатие фото сразу при выборе
+    // Надежная обработка фото
     const photoInput = document.getElementById("photoInput");
-    photoInput.addEventListener("change", async function() {
-      if (this.files && this.files.length > 0) {
-        const title = document.getElementById("uploadTitle");
-        title.innerText = "⏳ Обработка фото...";
-        isCompressing = true;
+    photoInput.addEventListener("change", async function(e) {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
 
-        for (let i = 0; i < this.files.length; i++) {
-          if (processedPhotos.length < 5) {
-            const file = this.files[i];
+      const title = document.getElementById("uploadTitle");
+      title.innerText = "⏳ Обработка фото...";
+
+      for (let i = 0; i < files.length; i++) {
+        if (processedPhotos.length < 5) {
+          const file = files[i];
+          try {
             const b64 = await fastCompress(file);
             processedPhotos.push({
               name: file.name,
               base64: b64,
               thumbUrl: URL.createObjectURL(file)
             });
+          } catch (err) {
+            console.error("Ошибка сжатия:", err);
           }
         }
-
-        isCompressing = false;
-        title.innerText = "Нажмите для выбора фото";
-        renderPhotos();
       }
+
+      // Сбрасываем input, чтобы можно было выбирать те же файлы повторно
+      photoInput.value = "";
+      title.innerText = "Нажмите для выбора фото";
+      renderPhotos();
     });
 
     function renderPhotos() {
@@ -490,22 +535,120 @@
       renderPhotos();
     }
 
-    // Ультра-быстрое сжатие до 1000px и 70% качества (документы идеально читаемы)
+    // Быстрое сжатие со страховкой от зависаний
     function fastCompress(file) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = e => {
+        reader.onload = (e) => {
           const img = new Image();
           img.src = e.target.result;
           img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const MAX = 1000;
-            let w = img.width, h = img.height;
-            if (w > MAX || h > MAX) {
-              if (w > h) { h = Math.round((h * MAX) / w); w = MAX; }
-              else { w = Math.round((w * MAX) / h); h = MAX; }
+            try {
+              const canvas = document.createElement("canvas");
+              const MAX = 1000;
+              let w = img.width, h = img.height;
+              if (w > MAX || h > MAX) {
+                if (w > h) { h = Math.round((h * MAX) / w); w = MAX; }
+                else { w = Math.round((w * MAX) / h); h = MAX; }
+              }
+              canvas.width = w; canvas.height = h;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(canvas.toDataURL("image/jpeg", 0.7));
+            } catch (err) {
+              resolve(e.target.result); // В случае сбоя canvas отдаем оригинал
             }
-            canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, w, h);
+          };
+          img.onerror = () => resolve(e.target.result);
+        };
+        reader.onerror = () => resolve("");
+      });
+    }
+
+    // Отправка формы
+    async function submitForm() {
+      hideErr();
+
+      const fio = document.getElementById("fio").value.trim();
+      const inn = document.getElementById("inn").value.trim();
+      const category = document.getElementById("category").value;
+
+      if (fio.length < 5 || fio.split(" ").length < 2) {
+        showErr("Введите полное ФИО (минимум Имя и Фамилия).");
+        return;
+      }
+      if (!/^\d{10,12}$/.test(inn)) {
+        showErr("ИНН должен состоять из 10 или 12 цифр.");
+        return;
+      }
+      if (processedPhotos.length === 0) {
+        showErr("Прикрепите хотя бы 1 фото подтверждающего документа.");
+        return;
+      }
+
+      const finalCart = [];
+      for (const [k, v] of Object.entries(cart)) {
+        if (v > 0) finalCart.push({ id: Number(k), qty: v });
+      }
+
+      if (finalCart.length === 0) {
+        showErr("Выберите хотя бы один товар из списка помощи.");
+        return;
+      }
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.innerText = "Отправка...";
+
+      try {
+        const tgUser = tg?.initDataUnsafe?.user;
+
+        const payload = {
+          initData: tg?.initData || "",
+          userId: tgUser?.id || null,
+          username: tgUser?.username || "",
+          fio: fio,
+          inn: inn,
+          category: category,
+          photos: processedPhotos.map(p => ({ base64: p.base64, name: p.name })),
+          cart: finalCart
+        };
+
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+
+        const ans = await res.json();
+
+        if (ans.status === "success") {
+          if (tg?.close) {
+            tg.close();
+          } else {
+            window.close();
+          }
+        } else {
+          btn.disabled = false;
+          btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
+          showErr(ans.message);
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
+        showErr("Ошибка сети при отправке. Попробуйте еще раз.");
+      }
+    }
+
+    function showErr(msg) {
+      const el = document.getElementById("err");
+      el.innerText = msg;
+      el.style.display = "block";
+    }
+
+    function hideErr() {
+      document.getElementById("err").style.display = "none";
+    }
+  </script>
+</body>
+</html>
