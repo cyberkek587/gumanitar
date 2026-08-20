@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Гуманитарная помощь</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #f4f4f5);
+      --card: var(--tg-theme-secondary-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #18181b);
+      --hint: var(--tg-theme-hint-color, #71717a);
+    }
+    body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 12px; margin: 0; }
+    .card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    h3 { margin: 0 0 10px 0; font-size: 15px; }
+    label { font-size: 13px; color: var(--hint); display: block; margin-top: 8px; }
+    input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #e4e4e7; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: var(--bg); color: var(--text); }
+    .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f4f4f5; }
+    .counter { display: flex; align-items: center; gap: 10px; }
+    .btn-cnt { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e4e4e7; background: var(--card); font-size: 18px; font-weight: bold; cursor: pointer; color: var(--text); }
+    .qty { font-weight: bold; width: 16px; text-align: center; }
+    .error { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; font-weight: 500; }
+    #loader { text-align: center; color: var(--hint); padding: 20px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h3>👤 Ваши данные</h3>
+    <label>ФИО полностью</label>
+    <input type="text" id="fio" placeholder="Иванов Иван Иванович" required>
+
+    <label>ИНН (10 или 12 цифр)</label>
+    <input type="number" id="inn" placeholder="1234567890" required>
+
+    <label>Категория</label>
+    <select id="category">
+      <option value="ВПЛ">ВПЛ (Переселенцы)</option>
+      <option value="Многодетная семья">Многодетная семья</option>
+      <option value="Пенсионер">Пенсионер (65+)</option>
+      <option value="Инвалидность">Лицо с инвалидностью</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h3>📄 Документ (Справка / Паспорт)</h3>
+    <input type="file" id="photoInput" accept="image/*">
+    <label>Фотография документа (сжимается автоматически)</label>
+  </div>
+
+  <div class="card">
+    <h3>📦 Выбор помощи</h3>
+    <div id="loader">Загрузка склада...</div>
+    <div id="catalog"></div>
+    <div id="err" class="error"></div>
+  </div>
+
+  <script>
+    // ==========================================
+    // ВСТАВЬТЕ СЮДА ВАШ URL ИЗ ШАГА 3 (Apps Script)
+    const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
+    // ==========================================
+
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    let items = [];
+    let cart = {};
+
+    // Загрузка товаров
+    fetch(API_URL)
+      .then(r => r.json())
+      .then(res => {
+        document.getElementById("loader").style.display = "none";
+        if (res.status === "success" && res.items.length > 0) {
+          items = res.items;
+          render();
+          tg.MainButton.setText("ОТПРАВИТЬ ЗАЯВКУ").show().onClick(submit);
+        } else {
+          document.getElementById("loader").innerText = "На складе нет доступной помощи.";
+          document.getElementById("loader").style.display = "block";
+        }
+      });
+
+    function render() {
+      const cat = document.getElementById("catalog");
+      cat.innerHTML = "";
+      items.forEach(i => {
+        cart[i.id] = 0;
+        cat.innerHTML += `
+          <div class="item-row">
+            <div>
+              <div style="font-weight: 500;">${i.name}</div>
+              <div style="font-size: 12px; color: var(--hint);">Осталось: ${i.stock} шт. (макс: ${i.limit})</div>
+            </div>
+            <div class="counter">
+              <button class="btn-cnt" onclick="count(${i.id}, -1)">-</button>
+              <span class="qty" id="q_${i.id}">0</span>
+              <button class="btn-cnt" onclick="count(${i.id}, 1)">+</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function count(id, d) {
+      const itm = items.find(x => x.id === id);
+      const val = (cart[id] || 0) + d;
+      if (val >= 0 && val <= Math.min(itm.stock, itm.limit)) {
+        cart[id] = val;
+        document.getElementById(`q_${id}`).innerText = val;
+      }
+    }
+
+    // Сжатие изображения
+    function compressImage(file) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const MAX = 1200;
+            let w = img.width, h = img.height;
+            if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL("image/jpeg", 0.75));
+          };
+        };
+      });
+    }
+
+    async function submit() {
+      const errBox = document.getElementById("err");
+      errBox.style.display = "none";
+
+      const fio = document.getElementById("fio").value.trim();
+      const inn = document.getElementById("inn").value.trim();
+      const category = document.getElementById("category").value;
+      const fileInput = document.getElementById("photoInput");
+
+      if (fio.length < 5) return showErr("Введите полное ФИО.");
+      if (!/^\d{10,12}$/.test(inn)) return showErr("ИНН должен быть из 10-12 цифр.");
+      if (fileInput.files.length === 0) return showErr("Прикрепите фото документа.");
+
+      const finalCart = [];
+      for (const [k, v] of Object.entries(cart)) {
+        if (v > 0) finalCart.push({ id: Number(k), qty: v });
+      }
+      if (finalCart.length === 0) return showErr("Выберите хотя бы одну позицию.");
+
+      tg.MainButton.showProgress();
+
+      try {
+        const photoBase64 = await compressImage(fileInput.files[0]);
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            initData: tg.initData,
+            fio: fio,
+            inn: inn,
+            category: category,
+            photoBase64: photoBase64,
+            photoName: fileInput.files[0].name,
+            cart: finalCart
+          })
+        });
+        const ans = await res.json();
+        tg.MainButton.hideProgress();
+
+        if (ans.status === "success") {
+          tg.showAlert(`Заявка №${ans.requestId} принята!`, () => tg.close());
+        } else {
+          showErr(ans.message);
+        }
+      } catch (e) {
+        tg.MainButton.hideProgress();
+        showErr("Ошибка сети. Попробуйте снова.");
+      }
+    }
+
+    function showErr(t) {
+      const e = document.getElementById("err");
+      e.innerText = t;
+      e.style.display = "block";
+    }
+  </script>
+</body>
+</html>
