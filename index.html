@@ -171,7 +171,7 @@
       cursor: pointer;
     }
 
-    /* Каталог */
+    /* Каталог ТМЦ */
     .item-card {
       display: flex;
       align-items: center;
@@ -205,10 +205,11 @@
       border: 1px solid var(--border);
     }
 
+    /* Счетчик с ручным вводом */
     .stepper {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       background: var(--bg);
       padding: 4px;
       border-radius: var(--radius-sm);
@@ -233,11 +234,32 @@
       opacity: 0.3;
       cursor: not-allowed;
     }
-    .step-val {
-      min-width: 20px;
+
+    /* Поле ручного ввода количества */
+    .step-input {
+      width: 44px;
+      height: 32px;
       text-align: center;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      padding: 0;
+      margin: 0;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .step-input:focus {
+      background: var(--card-bg);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+    .step-input::-webkit-outer-spin-button,
+    .step-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     .alert-box {
@@ -296,7 +318,7 @@
       <p>Заполните форму для регистрации на получение ТМЦ</p>
     </div>
 
-    <!-- Данные заявителя -->
+    <!-- 1. Данные заявителя -->
     <div class="card">
       <div class="card-title">👤 Данные заявителя</div>
       
@@ -322,7 +344,7 @@
       </div>
     </div>
 
-    <!-- Документы -->
+    <!-- 2. Документы -->
     <div class="card">
       <div class="card-title">📄 Документы (до 5 фото)</div>
       
@@ -336,7 +358,7 @@
       <div class="photos-grid" id="photosGrid"></div>
     </div>
 
-    <!-- Склад -->
+    <!-- 3. Склад -->
     <div class="card">
       <div class="card-title">📦 Доступная помощь на складе</div>
       <div id="loader" style="text-align: center; color: var(--hint); padding: 10px;">⏳ Загрузка доступных остатков...</div>
@@ -368,7 +390,7 @@
     let cart = {};
     let selectedFiles = [];
 
-    // Загрузка каталога
+    // 1. Загрузка каталога
     fetch(API_URL)
       .then(r => r.json())
       .then(res => {
@@ -385,11 +407,14 @@
         document.getElementById("loader").innerText = "Ошибка загрузки данных со склада.";
       });
 
+    // 2. Отрисовка каталога с полями ручного ввода
     function renderCatalog() {
       const container = document.getElementById("catalog");
       container.innerHTML = "";
       items.forEach(i => {
         cart[i.id] = 0;
+        const maxAllowed = Math.min(i.stock, i.limit);
+
         container.innerHTML += `
           <div class="item-card">
             <div>
@@ -401,7 +426,15 @@
             </div>
             <div class="stepper">
               <button class="btn-step" id="btn_sub_${i.id}" onclick="updateQty(${i.id}, -1)" disabled>−</button>
-              <span class="step-val" id="qty_${i.id}">0</span>
+              <input type="number" 
+                     class="step-input" 
+                     id="qty_${i.id}" 
+                     value="0" 
+                     min="0" 
+                     max="${maxAllowed}" 
+                     inputmode="numeric" 
+                     oninput="onManualInput(${i.id}, this)"
+                     onblur="onManualBlur(${i.id}, this)">
               <button class="btn-step" id="btn_add_${i.id}" onclick="updateQty(${i.id}, 1)">+</button>
             </div>
           </div>
@@ -409,6 +442,7 @@
       });
     }
 
+    // 3. Изменение через кнопки + / -
     function updateQty(id, delta) {
       const item = items.find(x => x.id === id);
       const current = cart[id] || 0;
@@ -417,9 +451,40 @@
 
       if (next >= 0 && next <= maxAllowed) {
         cart[id] = next;
-        document.getElementById(`qty_${id}`).innerText = next;
+        const inputEl = document.getElementById(`qty_${id}`);
+        if (inputEl) inputEl.value = next;
+        
         document.getElementById(`btn_sub_${id}`).disabled = (next === 0);
         document.getElementById(`btn_add_${id}`).disabled = (next === maxAllowed);
+        updateSummary();
+      }
+    }
+
+    // 4. Ручной ввод числа с клавиатуры
+    function onManualInput(id, el) {
+      const item = items.find(x => x.id === id);
+      const maxAllowed = Math.min(item.stock, item.limit);
+      let val = parseInt(el.value, 10);
+
+      if (isNaN(val) || val < 0) {
+        val = 0;
+      } else if (val > maxAllowed) {
+        val = maxAllowed;
+        el.value = maxAllowed; // Автоматически срезаем до максимума
+      }
+
+      cart[id] = val;
+      document.getElementById(`btn_sub_${id}`).disabled = (val <= 0);
+      document.getElementById(`btn_add_${id}`).disabled = (val >= maxAllowed);
+      updateSummary();
+    }
+
+    function onManualBlur(id, el) {
+      if (el.value === "" || isNaN(parseInt(el.value, 10))) {
+        el.value = 0;
+        cart[id] = 0;
+        document.getElementById(`btn_sub_${id}`).disabled = true;
+        document.getElementById(`btn_add_${id}`).disabled = false;
         updateSummary();
       }
     }
@@ -430,7 +495,7 @@
       btn.innerText = total > 0 ? `ОТПРАВИТЬ ЗАЯВКУ (${total})` : "ОТПРАВИТЬ ЗАЯВКУ";
     }
 
-    // Обработка фото
+    // 5. Обработка фото
     const photoInput = document.getElementById("photoInput");
     photoInput.addEventListener("change", function() {
       if (this.files) {
@@ -481,7 +546,7 @@
       document.getElementById("uploadZone").style.display = selectedFiles.length >= 5 ? "none" : "block";
     }
 
-    // Сжатие изображения через Canvas (до ~250 КБ)
+    // Сжатие изображения перед отправкой
     function compressImage(file) {
       return new Promise(resolve => {
         const reader = new FileReader();
@@ -502,7 +567,7 @@
       });
     }
 
-    // Отправка формы
+    // 6. Отправка формы
     async function submitForm() {
       hideErr();
 
@@ -538,14 +603,12 @@
       btn.innerText = "Сжатие и отправка...";
 
       try {
-        // Сжимаем фото перед отправкой
         const compressedPhotos = [];
         for (let file of selectedFiles) {
           const b64 = await compressImage(file);
           compressedPhotos.push({ base64: b64, name: file.name });
         }
 
-        // Извлекаем пользователя Telegram
         const tgUser = tg?.initDataUnsafe?.user;
 
         const payload = {
