@@ -1,654 +1,699 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Гуманитарная помощь</title>
+  <title>Гуманітарна допомога</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: var(--tg-theme-bg-color, #f4f4f7);
-      --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
-      --text: var(--tg-theme-text-color, #18181b);
-      --hint: var(--tg-theme-hint-color, #71717a);
-      --accent: var(--tg-theme-button-color, #2563eb);
-      --accent-text: var(--tg-theme-button-text-color, #ffffff);
-      --border: rgba(0, 0, 0, 0.08);
-      --radius: 16px;
-      --radius-sm: 10px;
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --radius: 12px;
     }
 
     @media (prefers-color-scheme: dark) {
-      :root { --border: rgba(255, 255, 255, 0.1); }
+      :root {
+        --bg: #111318;
+        --card: #1c1e24;
+        --text: #e4e4e7;
+        --muted: #9ca3af;
+        --border: #2e3038;
+        --danger-bg: #2a1518;
+      }
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      margin: 0;
       padding: 16px;
       display: flex;
       justify-content: center;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .app-container {
+    .wrap {
       width: 100%;
-      max-width: 520px;
-      padding-bottom: 90px;
+      max-width: 480px;
+      padding-bottom: 88px;
     }
 
-    .header { margin-bottom: 20px; text-align: left; }
-    .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; letter-spacing: -0.5px; }
-    .header p { font-size: 14px; color: var(--hint); margin: 0; }
+    .top { margin-bottom: 20px; }
+    .top h1 { font-size: 20px; font-weight: 700; line-height: 1.3; }
+    .top p { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 16px;
+    .section {
+      background: var(--card);
       border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
     }
-
-    .card-title {
-      font-size: 15px;
+    .section-title {
+      font-size: 14px;
       font-weight: 600;
-      margin: 0 0 14px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      margin-bottom: 14px;
     }
 
-    .form-group { margin-bottom: 14px; }
-    .form-group:last-child { margin-bottom: 0; }
-    label {
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
       font-size: 12px;
       font-weight: 600;
-      color: var(--hint);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: block;
-      margin-bottom: 6px;
+      color: var(--muted);
+      margin-bottom: 5px;
     }
-    input, select {
+    .field input,
+    .field select {
       width: 100%;
-      padding: 12px 14px;
+      height: 44px;
+      padding: 0 12px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 8px;
       font-size: 15px;
       background: var(--bg);
       color: var(--text);
       outline: none;
+      -webkit-appearance: none;
+      appearance: none;
     }
-    input:focus, select:focus {
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .field input:focus,
+    .field select:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    /* Зона загрузки фото (100% кликабельная) */
-    .upload-zone {
+    .upload-area {
       border: 2px dashed var(--border);
-      border-radius: var(--radius-sm);
-      padding: 20px;
+      border-radius: 8px;
+      padding: 24px 16px;
       text-align: center;
       cursor: pointer;
-      background: var(--bg);
       position: relative;
-      overflow: hidden;
-      display: block;
+      transition: border-color 0.15s;
     }
-    .upload-zone:hover {
-      border-color: var(--accent);
-    }
-    .upload-zone input[type="file"] {
+    .upload-area:hover { border-color: var(--accent); }
+    .upload-area input[type="file"] {
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
+      inset: 0;
       opacity: 0;
       cursor: pointer;
-      z-index: 10;
     }
+    .upload-area .icon { font-size: 24px; margin-bottom: 6px; }
+    .upload-area .label { font-size: 14px; font-weight: 500; }
+    .upload-area .sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
-    .photos-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .photo-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px;
-      background: var(--bg);
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-    }
-    .photo-info {
+    .photo-list { margin-top: 10px; }
+    .photo-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      overflow: hidden;
+      padding: 8px 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 6px;
     }
-    .photo-thumb {
-      width: 42px;
-      height: 42px;
+    .photo-row img {
+      width: 38px;
+      height: 38px;
       border-radius: 6px;
       object-fit: cover;
-      border: 1px solid var(--border);
+      flex-shrink: 0;
     }
-    .photo-name {
+    .photo-row .name {
+      flex: 1;
       font-size: 13px;
-      font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 180px;
     }
-    .btn-remove {
+    .photo-row .del {
+      font-size: 12px;
+      color: var(--danger);
       background: none;
       border: none;
-      color: #ef4444;
-      font-size: 13px;
-      font-weight: 600;
       cursor: pointer;
-      padding: 6px 8px;
+      font-weight: 500;
+      padding: 4px;
+      flex-shrink: 0;
     }
 
-    /* ТМЦ */
-    .item-card {
+    .item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 0;
+      gap: 12px;
+      padding: 10px 0;
       border-bottom: 1px solid var(--border);
     }
-    .item-card:last-child { border-bottom: none; padding-bottom: 0; }
-    .item-card:first-child { padding-top: 0; }
-    .item-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-    .item-badges { display: flex; gap: 6px; }
-    .badge {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 7px;
-      border-radius: 6px;
-      background: var(--bg);
-      color: var(--hint);
-      border: 1px solid var(--border);
-    }
+    .item:last-child { border-bottom: none; }
+    .item-info .item-name { font-size: 14px; font-weight: 600; }
+    .item-info .item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-    .stepper {
+    .qty {
       display: flex;
       align-items: center;
-      gap: 4px;
-      background: var(--bg);
-      padding: 4px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
+      gap: 2px;
+      flex-shrink: 0;
     }
-    .btn-step {
-      width: 32px;
-      height: 32px;
+    .qty button {
+      width: 30px;
+      height: 30px;
       border: none;
       border-radius: 8px;
-      background: var(--card-bg);
+      background: var(--bg);
       color: var(--text);
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .btn-step:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    .step-input {
-      width: 44px;
-      height: 32px;
+    .qty button:disabled { opacity: 0.25; cursor: default; }
+    .qty input {
+      width: 38px;
+      height: 30px;
       text-align: center;
-      font-size: 15px;
-      font-weight: 700;
-      border: 1px solid transparent;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
       border-radius: 6px;
       background: transparent;
       color: var(--text);
-      padding: 0;
-      margin: 0;
       outline: none;
       -moz-appearance: textfield;
     }
-    .step-input:focus {
-      background: var(--card-bg);
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-    }
-    .step-input::-webkit-outer-spin-button,
-    .step-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
+    .qty input::-webkit-outer-spin-button,
+    .qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-    .alert-box {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-      padding: 12px;
-      border-radius: var(--radius-sm);
+    /* ── Згода ── */
+    .consent-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+    .consent-block .consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
       font-size: 13px;
-      margin-top: 12px;
-      display: none;
-      font-weight: 500;
+      line-height: 1.45;
+      color: var(--text);
+    }
+    .consent-block input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .consent-block .consent-link {
+      color: var(--accent);
+      text-decoration: underline;
+      cursor: pointer;
     }
 
-    .btn-retry {
+    .error {
+      display: none;
+      background: var(--danger-bg);
+      border: 1px solid #fecaca;
+      color: var(--danger);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .retry-btn {
       display: inline-block;
-      margin-top: 8px;
-      padding: 6px 12px;
+      margin-top: 6px;
+      padding: 5px 10px;
       font-size: 12px;
-      font-weight: 600;
       color: var(--accent);
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
       cursor: pointer;
+      font-weight: 500;
     }
 
-    .bottom-bar {
+    .bar {
       position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: var(--card-bg);
-      padding: 12px 16px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card);
       border-top: 1px solid var(--border);
+      padding: 12px 16px;
       display: flex;
       justify-content: center;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
     }
-    .bottom-bar-inner { width: 100%; max-width: 520px; }
-    .btn-submit {
+    .bar .inner { width: 100%; max-width: 480px; }
+    .send {
       width: 100%;
+      height: 48px;
       background: var(--accent);
-      color: var(--accent-text);
+      color: #fff;
       border: none;
-      padding: 14px;
-      border-radius: var(--radius-sm);
+      border-radius: 10px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .send:hover { background: var(--accent-hover); }
+    .send:disabled { opacity: 0.5; cursor: default; }
+
+    @media (min-width: 768px) {
+      body { padding: 24px; }
+      .wrap { max-width: 520px; }
+      .top h1 { font-size: 24px; }
+      .section { padding: 20px; }
+    }
+    @media (min-width: 1200px) {
+      body { padding: 40px 24px; }
+      .wrap { max-width: 560px; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="app-container">
-    
-    <div class="header">
-      <h1>Заявка на помощь</h1>
-      <p>Заполните форму для регистрации на получение ТМЦ</p>
+<div class="wrap">
+
+  <div class="top">
+    <h1>Заявка на допомогу</h1>
+    <p>Заповніть форму для отримання ТМЦ</p>
+  </div>
+
+  <!-- Дані -->
+  <div class="section">
+    <div class="section-title">👤 Дані заявника</div>
+    <div class="field">
+      <label for="fio">ПІБ</label>
+      <input id="fio" type="text" placeholder="Шевченко Тарас Григорович" autocomplete="name">
     </div>
-
-    <!-- 1. Данные заявителя -->
-    <div class="card">
-      <div class="card-title">👤 Данные заявителя</div>
-      
-      <div class="form-group">
-        <label>ФИО полностью</label>
-        <input type="text" id="fio" placeholder="Иванов Иван Иванович" autocomplete="name" required>
-      </div>
-
-      <div class="form-group">
-        <label>ИНН (10 или 12 цифр)</label>
-        <input type="number" id="inn" placeholder="1234567890" inputmode="numeric" required>
-      </div>
-
-      <div class="form-group">
-        <label>Льготная категория</label>
-        <select id="category">
-          <option value="ВПЛ">ВПЛ (Переселенцы)</option>
-          <option value="Многодетная семья">Многодетная семья</option>
-          <option value="Пенсионер">Пенсионер (65+)</option>
-          <option value="Инвалидность">Лицо с инвалидностью</option>
-          <option value="Утрата жилья">Утрата жилья</option>
-        </select>
-      </div>
+    <div class="field">
+      <label for="inn">ІПН (10 або 12 цифр)</label>
+      <input id="inn" type="number" placeholder="1234567890" inputmode="numeric">
     </div>
+    <div class="field">
+      <label for="category">Категорія</label>
+      <select id="category">
+        <option value="ВПО">ВПО (переселенці)</option>
+        <option value="Багатодітна сім'я">Багатодітна сім'я</option>
+        <option value="Пенсіонер">Пенсіонер (65+)</option>
+        <option value="Інвалідність">Особа з інвалідністю</option>
+        <option value="Втрата житла">Втрата житла</option>
+      </select>
+    </div>
+  </div>
 
-    <!-- 2. Документы -->
-    <div class="card">
-      <div class="card-title">📄 Документы (до 5 фото)</div>
-      
-      <label class="upload-zone" id="uploadZone">
-        <input type="file" id="photoInput" accept="image/*" multiple>
-        <div style="font-size: 28px; margin-bottom: 4px;">📸</div>
-        <p style="margin: 0; font-weight: 600; font-size: 14px;" id="uploadTitle">Нажмите для выбора фото</p>
-        <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--hint);">Паспорт, справка ВПЛ и др. (до 5 шт)</p>
+  <!-- Документи -->
+  <div class="section">
+    <div class="section-title">📄 Документи</div>
+    <label class="upload-area" id="uploadZone">
+      <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" multiple>
+      <div class="icon">📷</div>
+      <div class="label" id="uploadLabel">Обрати фото</div>
+      <div class="sub">Паспорт, довідка ВПО — до 5 шт.</div>
+    </label>
+    <div class="photo-list" id="photoList"></div>
+  </div>
+
+  <!-- ТМЦ -->
+  <div class="section">
+    <div class="section-title">📦 Доступна допомога</div>
+    <div id="loader" style="text-align:center;color:var(--muted);padding:16px 0;font-size:13px;">Завантаження…</div>
+    <div id="catalog"></div>
+    <div id="err" class="error"></div>
+  </div>
+
+  <!-- Згода на обробку даних -->
+  <div class="section">
+    <div class="consent-block">
+      <label class="consent-label">
+        <input type="checkbox" id="consentCheck">
+        <span>
+          Я надаю згоду на обробку моїх персональних даних (ПІБ, ІПН, фото документів) 
+          з метою оформлення заявки на отримання гуманітарної допомоги відповідно до 
+          <span class="consent-link" onclick="showPrivacy()">Політики конфіденційності</span>.
+          Дані використовуються виключно для перевірки та виконання заявки.
+        </span>
       </label>
-
-      <div class="photos-grid" id="photosGrid"></div>
-    </div>
-
-    <!-- 3. Склад -->
-    <div class="card">
-      <div class="card-title">📦 Доступная помощь на складе</div>
-      <div id="loader" style="text-align: center; color: var(--hint); padding: 14px;">⏳ Загрузка доступных остатков...</div>
-      <div id="catalog"></div>
-      <div id="err" class="alert-box"></div>
-    </div>
-
-  </div>
-
-  <div class="bottom-bar">
-    <div class="bottom-bar-inner">
-      <button class="btn-submit" id="submitBtn" onclick="submitForm()">ОТПРАВИТЬ ЗАЯВКУ</button>
     </div>
   </div>
 
-  <script>
-    // ===================================================================
-    // ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ ИЗ ШАГА 1 -
-    const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
-    // ===================================================================
+</div>
 
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-    }
+<div class="bar">
+  <div class="inner">
+    <button class="send" id="sendBtn" onclick="submitForm()">НАДІСЛАТИ ЗАЯВКУ</button>
+  </div>
+</div>
 
-    let items = [];
-    let cart = {};
-    let processedPhotos = [];
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
 
-    // Загрузка каталога с обработкой ошибок
-    function loadCatalog() {
-      const loader = document.getElementById("loader");
-      loader.style.display = "block";
-      loader.innerHTML = "⏳ Загрузка доступных остатков...";
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 
-      fetch(API_URL)
-        .then(r => {
-          if (!r.ok) throw new Error("HTTP " + r.status);
-          return r.json();
-        })
-        .then(res => {
-          loader.style.display = "none";
-          if (res.status === "success" && res.items && res.items.length > 0) {
-            items = res.items;
-            renderCatalog();
-          } else {
-            loader.innerHTML = "На складе сейчас нет доступных товаров.<br><button class='btn-retry' onclick='loadCatalog()'>🔄 Обновить</button>";
-            loader.style.display = "block";
-            document.getElementById("submitBtn").disabled = true;
-          }
-        })
-        .catch(err => {
-          loader.innerHTML = `⚠️ Ошибка связи с сервером (${err.message}).<br><button class='btn-retry' onclick='loadCatalog()'>🔄 Попробовать снова</button>`;
-          loader.style.display = "block";
-        });
-    }
+let items = [];
+let cart = {};
+let photos = [];
 
-    // Запускаем загрузку сразу
-    loadCatalog();
+/* ── Санітизація (фронтенд — XSS захист) ── */
+function esc(s) {
+  const el = document.createElement("span");
+  el.textContent = s;
+  return el.innerHTML;
+}
 
-    function renderCatalog() {
-      const container = document.getElementById("catalog");
-      container.innerHTML = "";
-      items.forEach(i => {
-        cart[i.id] = 0;
-        const maxAllowed = Math.min(i.stock, i.limit);
+/* ── Каталог ── */
+function loadCatalog() {
+  const el = document.getElementById("loader");
+  el.textContent = "Завантаження…";
+  el.style.display = "block";
 
-        container.innerHTML += `
-          <div class="item-card">
-            <div>
-              <div class="item-title">${i.name}</div>
-              <div class="item-badges">
-                <span class="badge">Остаток: ${i.stock} шт.</span>
-                <span class="badge">Макс: ${i.limit} шт.</span>
-              </div>
-            </div>
-            <div class="stepper">
-              <button class="btn-step" id="btn_sub_${i.id}" onclick="updateQty(${i.id}, -1)" disabled>−</button>
-              <input type="number" 
-                     class="step-input" 
-                     id="qty_${i.id}" 
-                     value="0" 
-                     min="0" 
-                     max="${maxAllowed}" 
-                     inputmode="numeric" 
-                     oninput="onManualInput(${i.id}, this)"
-                     onblur="onManualBlur(${i.id}, this)">
-              <button class="btn-step" id="btn_add_${i.id}" onclick="updateQty(${i.id}, 1)">+</button>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function updateQty(id, delta) {
-      const item = items.find(x => x.id === id);
-      const current = cart[id] || 0;
-      const next = current + delta;
-      const maxAllowed = Math.min(item.stock, item.limit);
-
-      if (next >= 0 && next <= maxAllowed) {
-        cart[id] = next;
-        const inputEl = document.getElementById(`qty_${id}`);
-        if (inputEl) inputEl.value = next;
-        
-        document.getElementById(`btn_sub_${id}`).disabled = (next === 0);
-        document.getElementById(`btn_add_${id}`).disabled = (next === maxAllowed);
-        updateSummary();
+  fetch(API_URL)
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(res => {
+      el.style.display = "none";
+      if (res.status === "success" && res.items?.length) {
+        items = res.items;
+        renderCatalog();
+      } else {
+        el.textContent = "Немає доступних товарів.";
+        el.style.display = "block";
+        const retry = document.createElement("button");
+        retry.className = "retry-btn";
+        retry.textContent = "Оновити";
+        retry.onclick = loadCatalog;
+        el.appendChild(document.createElement("br"));
+        el.appendChild(retry);
+        document.getElementById("sendBtn").disabled = true;
       }
-    }
-
-    function onManualInput(id, el) {
-      const item = items.find(x => x.id === id);
-      const maxAllowed = Math.min(item.stock, item.limit);
-      let val = parseInt(el.value, 10);
-
-      if (isNaN(val) || val < 0) {
-        val = 0;
-      } else if (val > maxAllowed) {
-        val = maxAllowed;
-        el.value = maxAllowed;
-      }
-
-      cart[id] = val;
-      document.getElementById(`btn_sub_${id}`).disabled = (val <= 0);
-      document.getElementById(`btn_add_${id}`).disabled = (val >= maxAllowed);
-      updateSummary();
-    }
-
-    function onManualBlur(id, el) {
-      if (el.value === "" || isNaN(parseInt(el.value, 10))) {
-        el.value = 0;
-        cart[id] = 0;
-        document.getElementById(`btn_sub_${id}`).disabled = true;
-        document.getElementById(`btn_add_${id}`).disabled = false;
-        updateSummary();
-      }
-    }
-
-    function updateSummary() {
-      const total = Object.values(cart).reduce((a, b) => a + b, 0);
-      const btn = document.getElementById("submitBtn");
-      btn.innerText = total > 0 ? `ОТПРАВИТЬ ЗАЯВКУ (${total})` : "ОТПРАВИТЬ ЗАЯВКУ";
-    }
-
-    // Надежная обработка фото
-    const photoInput = document.getElementById("photoInput");
-    photoInput.addEventListener("change", async function(e) {
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-
-      const title = document.getElementById("uploadTitle");
-      title.innerText = "⏳ Обработка фото...";
-
-      for (let i = 0; i < files.length; i++) {
-        if (processedPhotos.length < 5) {
-          const file = files[i];
-          try {
-            const b64 = await fastCompress(file);
-            processedPhotos.push({
-              name: file.name,
-              base64: b64,
-              thumbUrl: URL.createObjectURL(file)
-            });
-          } catch (err) {
-            console.error("Ошибка сжатия:", err);
-          }
-        }
-      }
-
-      // Сбрасываем input, чтобы можно было выбирать те же файлы повторно
-      photoInput.value = "";
-      title.innerText = "Нажмите для выбора фото";
-      renderPhotos();
-    });
-
-    function renderPhotos() {
-      const grid = document.getElementById("photosGrid");
-      grid.innerHTML = "";
-      processedPhotos.forEach((item, idx) => {
-        const div = document.createElement("div");
-        div.className = "photo-item";
-        div.innerHTML = `
-          <div class="photo-info">
-            <img src="${item.thumbUrl}" class="photo-thumb">
-            <div class="photo-name">${item.name}</div>
-          </div>
-          <button type="button" class="btn-remove" onclick="removePhoto(${idx})">Удалить</button>
-        `;
-        grid.appendChild(div);
-      });
-
-      document.getElementById("uploadZone").style.display = processedPhotos.length >= 5 ? "none" : "block";
-    }
-
-    function removePhoto(idx) {
-      processedPhotos.splice(idx, 1);
-      renderPhotos();
-    }
-
-    // Быстрое сжатие со страховкой от зависаний
-    function fastCompress(file) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e) => {
-          const img = new Image();
-          img.src = e.target.result;
-          img.onload = () => {
-            try {
-              const canvas = document.createElement("canvas");
-              const MAX = 1000;
-              let w = img.width, h = img.height;
-              if (w > MAX || h > MAX) {
-                if (w > h) { h = Math.round((h * MAX) / w); w = MAX; }
-                else { w = Math.round((w * MAX) / h); h = MAX; }
-              }
-              canvas.width = w; canvas.height = h;
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(img, 0, 0, w, h);
-              resolve(canvas.toDataURL("image/jpeg", 0.7));
-            } catch (err) {
-              resolve(e.target.result); // В случае сбоя canvas отдаем оригинал
-            }
-          };
-          img.onerror = () => resolve(e.target.result);
-        };
-        reader.onerror = () => resolve("");
-      });
-    }
-
-    // Отправка формы
-    async function submitForm() {
-      hideErr();
-
-      const fio = document.getElementById("fio").value.trim();
-      const inn = document.getElementById("inn").value.trim();
-      const category = document.getElementById("category").value;
-
-      if (fio.length < 5 || fio.split(" ").length < 2) {
-        showErr("Введите полное ФИО (минимум Имя и Фамилия).");
-        return;
-      }
-      if (!/^\d{10,12}$/.test(inn)) {
-        showErr("ИНН должен состоять из 10 или 12 цифр.");
-        return;
-      }
-      if (processedPhotos.length === 0) {
-        showErr("Прикрепите хотя бы 1 фото подтверждающего документа.");
-        return;
-      }
-
-      const finalCart = [];
-      for (const [k, v] of Object.entries(cart)) {
-        if (v > 0) finalCart.push({ id: Number(k), qty: v });
-      }
-
-      if (finalCart.length === 0) {
-        showErr("Выберите хотя бы один товар из списка помощи.");
-        return;
-      }
-
-      const btn = document.getElementById("submitBtn");
-      btn.disabled = true;
-      btn.innerText = "Отправка...";
-
-      try {
-        const tgUser = tg?.initDataUnsafe?.user;
-
-        const payload = {
-          initData: tg?.initData || "",
-          userId: tgUser?.id || null,
-          username: tgUser?.username || "",
-          fio: fio,
-          inn: inn,
-          category: category,
-          photos: processedPhotos.map(p => ({ base64: p.base64, name: p.name })),
-          cart: finalCart
-        };
-
-        const res = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-
-        const ans = await res.json();
-
-        if (ans.status === "success") {
-          if (tg?.close) {
-            tg.close();
-          } else {
-            window.close();
-          }
-        } else {
-          btn.disabled = false;
-          btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
-          showErr(ans.message);
-        }
-      } catch (e) {
-        btn.disabled = false;
-        btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
-        showErr("Ошибка сети при отправке. Попробуйте еще раз.");
-      }
-    }
-
-    function showErr(msg) {
-      const el = document.getElementById("err");
-      el.innerText = msg;
+    })
+    .catch(e => {
+      el.textContent = "Помилка зв'язку.";
       el.style.display = "block";
-    }
+      const retry = document.createElement("button");
+      retry.className = "retry-btn";
+      retry.textContent = "Спробувати знову";
+      retry.onclick = loadCatalog;
+      el.appendChild(document.createElement("br"));
+      el.appendChild(retry);
+    });
+}
+loadCatalog();
 
-    function hideErr() {
-      document.getElementById("err").style.display = "none";
+function renderCatalog() {
+  const c = document.getElementById("catalog");
+  c.innerHTML = "";
+
+  items.forEach(it => {
+    cart[it.id] = 0;
+    const mx = Math.min(it.stock, it.limit);
+    const safeName = esc(it.name);
+
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML =
+      '<div class="item-info">' +
+        '<div class="item-name"></div>' +
+        '<div class="item-meta"></div>' +
+      '</div>' +
+      '<div class="qty">' +
+        '<button disabled>−</button>' +
+        '<input type="number" value="0" min="0" inputmode="numeric">' +
+        '<button>+</button>' +
+      '</div>';
+
+    div.querySelector(".item-name").textContent = it.name;
+    div.querySelector(".item-meta").textContent = "Залишок: " + it.stock + " · Ліміт: " + mx + " шт.";
+
+    const btns = div.querySelectorAll("button");
+    const inp = div.querySelector("input");
+
+    btns[0].id = "m_" + it.id;
+    btns[1].id = "a_" + it.id;
+    inp.id = "q_" + it.id;
+    inp.max = mx;
+
+    btns[0].onclick = function() { step(it.id, -1); };
+    btns[1].onclick = function() { step(it.id, 1); };
+    inp.oninput = function() { manual(it.id, this); };
+    inp.onblur = function() { blurQty(it.id, this); };
+
+    c.appendChild(div);
+  });
+}
+
+function step(id, d) {
+  const it = items.find(x => x.id === id);
+  const mx = Math.min(it.stock, it.limit);
+  const v = (cart[id] || 0) + d;
+  if (v < 0 || v > mx) return;
+  cart[id] = v;
+  document.getElementById("q_" + id).value = v;
+  document.getElementById("m_" + id).disabled = v === 0;
+  document.getElementById("a_" + id).disabled = v === mx;
+  refreshBtn();
+}
+
+function manual(id, el) {
+  const it = items.find(x => x.id === id);
+  const mx = Math.min(it.stock, it.limit);
+  let v = parseInt(el.value, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  if (v > mx) { v = mx; el.value = mx; }
+  cart[id] = v;
+  document.getElementById("m_" + id).disabled = v <= 0;
+  document.getElementById("a_" + id).disabled = v >= mx;
+  refreshBtn();
+}
+
+function blurQty(id, el) {
+  if (el.value === "" || isNaN(parseInt(el.value))) {
+    el.value = 0;
+    cart[id] = 0;
+    document.getElementById("m_" + id).disabled = true;
+    document.getElementById("a_" + id).disabled = false;
+    refreshBtn();
+  }
+}
+
+function refreshBtn() {
+  const t = Object.values(cart).reduce((a, b) => a + b, 0);
+  document.getElementById("sendBtn").textContent = t ? "НАДІСЛАТИ ЗАЯВКУ (" + t + ")" : "НАДІСЛАТИ ЗАЯВКУ";
+}
+
+/* ── Фото ── */
+document.getElementById("photoInput").addEventListener("change", async function(e) {
+  const files = e.target.files;
+  if (!files?.length) return;
+  document.getElementById("uploadLabel").textContent = "Обробка…";
+
+  for (const f of files) {
+    if (photos.length >= 5) break;
+    try {
+      const b64 = await compress(f);
+      photos.push({ name: f.name, base64: b64, thumb: URL.createObjectURL(f) });
+    } catch (_) {}
+  }
+  this.value = "";
+  document.getElementById("uploadLabel").textContent = "Обрати фото";
+  renderPhotos();
+});
+
+function renderPhotos() {
+  const list = document.getElementById("photoList");
+  list.innerHTML = "";
+
+  photos.forEach((p, i) => {
+    const row = document.createElement("div");
+    row.className = "photo-row";
+
+    const img = document.createElement("img");
+    img.src = p.thumb;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "name";
+    nameSpan.textContent = p.name; // textContent — безпечно
+
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "✕";
+    del.onclick = function() { delPhoto(i); };
+
+    row.appendChild(img);
+    row.appendChild(nameSpan);
+    row.appendChild(del);
+    list.appendChild(row);
+  });
+
+  document.getElementById("uploadZone").style.display = photos.length >= 5 ? "none" : "";
+}
+
+function delPhoto(i) {
+  photos.splice(i, 1);
+  renderPhotos();
+}
+
+function compress(file) {
+  return new Promise(resolve => {
+    const r = new FileReader();
+    r.readAsDataURL(file);
+    r.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const cv = document.createElement("canvas");
+          const MAX = 1000;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          cv.width = w; cv.height = h;
+          cv.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(cv.toDataURL("image/jpeg", 0.7));
+        } catch (_) { resolve(e.target.result); }
+      };
+      img.src = e.target.result;
+    };
+    r.onerror = () => resolve("");
+  });
+}
+
+/* ── Політика конфіденційності ── */
+function showPrivacy() {
+  const w = window.open("", "_blank", "width=600,height=700");
+  w.document.write(
+    '<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8">' +
+    '<title>Політика конфіденційності</title>' +
+    '<style>body{font-family:sans-serif;max-width:600px;margin:32px auto;padding:0 16px;line-height:1.6;color:#1a1a1a}' +
+    'h1{font-size:20px}h2{font-size:16px;margin-top:20px}p{margin:8px 0}</style></head><body>' +
+    '<h1>Політика конфіденційності</h1>' +
+    '<h2>1. Які дані збираємо</h2>' +
+    '<p>Ми збираємо наступні персональні дані виключно для оформлення заявки на отримання гуманітарної допомоги:</p>' +
+    '<p>• ПІБ (прізвище, ім\'я, по батькові)<br>' +
+    '• ІПН (ідентифікаційний номер платника податків)<br>' +
+    '• Фотографії документів (паспорт, довідка ВПО тощо)<br>' +
+    '• Категорія пільгового статусу<br>' +
+    '• Telegram ID (якщо заявку подано через Telegram)</p>' +
+    '<h2>2. Мета обробки</h2>' +
+    '<p>Персональні дані обробляються виключно для:</p>' +
+    '<p>• Перевірки відповідності категорії допомоги<br>' +
+    '• Формування та виконання заявки<br>' +
+    '• Дотримання правила «1 раз на 60 днів»</p>' +
+    '<h2>3. Зберігання та захист</h2>' +
+    '<p>Дані зберігаються у захищеній Google Таблиці та Google Диску. ' +
+    'Доступ мають лише уповноважені волонтери. Дані не передаються третім особам.</p>' +
+    '<h2>4. Ваші права</h2>' +
+    '<p>Ви маєте право на видалення ваших даних. ' +
+    'Для цього зверніться до волонтера або адміністратора бота.</p>' +
+    '<h2>5. Контакти</h2>' +
+    '<p>З питань захисту даних звертайтеся до адміністратора Telegram-бота.</p>' +
+    '</body></html>'
+  );
+  w.document.close();
+}
+
+/* ── Відправка ── */
+async function submitForm() {
+  hideErr();
+
+  const consent = document.getElementById("consentCheck").checked;
+  if (!consent) {
+    return showErr("Необхідно надати згоду на обробку персональних даних.");
+  }
+
+  const fio = document.getElementById("fio").value.trim();
+  const inn = document.getElementById("inn").value.trim();
+  const cat = document.getElementById("category").value;
+
+  if (fio.length < 5 || fio.split(" ").length < 2) {
+    return showErr("Введіть ПІБ (мінімум ім'я та прізвище).");
+  }
+  if (!/^\d{10,12}$/.test(inn)) {
+    return showErr("ІПН — 10 або 12 цифр.");
+  }
+  if (!photos.length) {
+    return showErr("Долучіть хоча б одне фото документа.");
+  }
+
+  const cartArr = Object.entries(cart)
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => ({ id: +k, qty: v }));
+
+  if (!cartArr.length) {
+    return showErr("Оберіть хоча б один товар.");
+  }
+
+  const btn = document.getElementById("sendBtn");
+  btn.disabled = true;
+  btn.textContent = "Надсилання…";
+
+  try {
+    const u = tg?.initDataUnsafe?.user;
+    const body = {
+      initData: tg?.initData || "",
+      userId: u?.id || null,
+      username: u?.username || "",
+      fio: fio,
+      inn: inn,
+      category: cat,
+      photos: photos.map(p => ({ base64: p.base64, name: p.name })),
+      cart: cartArr,
+      consent: true
+    };
+
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    const ans = await res.json();
+
+    if (ans.status === "success") {
+      tg?.close ? tg.close() : window.close();
+    } else {
+      btn.disabled = false;
+      btn.textContent = "НАДІСЛАТИ ЗАЯВКУ";
+      showErr(ans.message);
     }
-  </script>
+  } catch (_) {
+    btn.disabled = false;
+    btn.textContent = "НАДІСЛАТИ ЗАЯВКУ";
+    showErr("Помилка мережі. Спробуйте знову.");
+  }
+}
+
+function showErr(m) {
+  const el = document.getElementById("err");
+  el.textContent = m;
+  el.style.display = "block";
+}
+function hideErr() {
+  document.getElementById("err").style.display = "none";
+}
+</script>
 </body>
 </html>
