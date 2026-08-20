@@ -19,7 +19,9 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      :root { --border: rgba(255, 255, 255, 0.1); }
+      :root {
+        --border: rgba(255, 255, 255, 0.1);
+      }
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -40,9 +42,21 @@
       padding-bottom: 90px;
     }
 
-    .header { margin-bottom: 20px; }
-    .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
-    .header p { font-size: 14px; color: var(--hint); margin: 0; }
+    .header {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 14px;
+      color: var(--hint);
+      margin: 0;
+    }
 
     .card {
       background: var(--card-bg);
@@ -62,8 +76,12 @@
       gap: 8px;
     }
 
-    .form-group { margin-bottom: 14px; }
-    .form-group:last-child { margin-bottom: 0; }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
     label {
       font-size: 12px;
       font-weight: 600;
@@ -82,13 +100,14 @@
       background: var(--bg);
       color: var(--text);
       outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     input:focus, select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
     }
 
-    /* Зона загрузки файлов */
+    /* Загрузка фото */
     .upload-zone {
       border: 2px dashed var(--border);
       border-radius: var(--radius-sm);
@@ -98,6 +117,9 @@
       background: var(--bg);
       position: relative;
     }
+    .upload-zone:hover {
+      border-color: var(--accent);
+    }
     .upload-zone input[type="file"] {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -105,7 +127,6 @@
       cursor: pointer;
     }
 
-    /* Список миниатюр фото */
     .photos-grid {
       display: flex;
       flex-direction: column;
@@ -128,8 +149,8 @@
       overflow: hidden;
     }
     .photo-thumb {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border-radius: 6px;
       object-fit: cover;
     }
@@ -150,7 +171,7 @@
       cursor: pointer;
     }
 
-    /* ТМЦ */
+    /* Каталог */
     .item-card {
       display: flex;
       align-items: center;
@@ -158,10 +179,22 @@
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
     }
-    .item-card:last-child { border-bottom: none; padding-bottom: 0; }
-    .item-card:first-child { padding-top: 0; }
-    .item-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-    .item-badges { display: flex; gap: 6px; }
+    .item-card:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .item-card:first-child {
+      padding-top: 0;
+    }
+    .item-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .item-badges {
+      display: flex;
+      gap: 6px;
+    }
     .badge {
       font-size: 11px;
       font-weight: 500;
@@ -194,8 +227,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .step-val { min-width: 20px; text-align: center; font-size: 15px; font-weight: 600; }
+    .btn-step:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .step-val {
+      min-width: 20px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+    }
 
     .alert-box {
       background: #fef2f2;
@@ -211,15 +254,21 @@
 
     .bottom-bar {
       position: fixed;
-      bottom: 0; left: 0; right: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       background: var(--card-bg);
       padding: 12px 16px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: center;
+      backdrop-filter: blur(10px);
       box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
     }
-    .bottom-bar-inner { width: 100%; max-width: 520px; }
+    .bottom-bar-inner {
+      width: 100%;
+      max-width: 520px;
+    }
     .btn-submit {
       width: 100%;
       background: var(--accent);
@@ -230,29 +279,39 @@
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
 
   <div class="app-container">
+    
     <div class="header">
       <h1>Заявка на помощь</h1>
       <p>Заполните форму для регистрации на получение ТМЦ</p>
     </div>
 
+    <!-- Данные заявителя -->
     <div class="card">
       <div class="card-title">👤 Данные заявителя</div>
+      
       <div class="form-group">
         <label>ФИО полностью</label>
-        <input type="text" id="fio" placeholder="Иванов Иван Иванович" required>
+        <input type="text" id="fio" placeholder="Иванов Иван Иванович" autocomplete="name" required>
       </div>
+
       <div class="form-group">
         <label>ИНН (10 или 12 цифр)</label>
-        <input type="number" id="inn" placeholder="1234567890" required>
+        <input type="number" id="inn" placeholder="1234567890" inputmode="numeric" required>
       </div>
+
       <div class="form-group">
-        <label>Категория</label>
+        <label>Льготная категория</label>
         <select id="category">
           <option value="ВПЛ">ВПЛ (Переселенцы)</option>
           <option value="Многодетная семья">Многодетная семья</option>
@@ -263,23 +322,28 @@
       </div>
     </div>
 
+    <!-- Документы -->
     <div class="card">
       <div class="card-title">📄 Документы (до 5 фото)</div>
+      
       <div class="upload-zone" id="uploadZone">
         <input type="file" id="photoInput" accept="image/*" multiple>
-        <div style="font-size: 24px; margin-bottom: 4px;">📸</div>
+        <div style="font-size: 26px; margin-bottom: 4px;">📸</div>
         <p style="margin: 0; font-weight: 500; font-size: 14px;">Нажмите для выбора фото</p>
         <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--hint);">Паспорт, справка ВПЛ и др. (до 5 шт)</p>
       </div>
+
       <div class="photos-grid" id="photosGrid"></div>
     </div>
 
+    <!-- Склад -->
     <div class="card">
       <div class="card-title">📦 Доступная помощь на складе</div>
-      <div id="loader" style="text-align:center; color:var(--hint); padding:10px;">⏳ Загрузка склада...</div>
+      <div id="loader" style="text-align: center; color: var(--hint); padding: 10px;">⏳ Загрузка доступных остатков...</div>
       <div id="catalog"></div>
       <div id="err" class="alert-box"></div>
     </div>
+
   </div>
 
   <div class="bottom-bar">
@@ -289,14 +353,20 @@
   </div>
 
   <script>
+    // ===================================================================
+    // ВАША ССЫЛКА НА GOOGLE APPS SCRIPT
     const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
+    // ===================================================================
 
     const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); }
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
 
     let items = [];
     let cart = {};
-    let selectedFiles = []; // Массив файлов
+    let selectedFiles = [];
 
     // Загрузка каталога
     fetch(API_URL)
@@ -307,20 +377,20 @@
           items = res.items;
           renderCatalog();
         } else {
-          document.getElementById("loader").innerText = "На складе нет доступных товаров.";
+          document.getElementById("loader").innerText = "На складе сейчас нет доступных товаров.";
           document.getElementById("submitBtn").disabled = true;
         }
       })
       .catch(() => {
-        document.getElementById("loader").innerText = "Ошибка загрузки данных.";
+        document.getElementById("loader").innerText = "Ошибка загрузки данных со склада.";
       });
 
     function renderCatalog() {
-      const c = document.getElementById("catalog");
-      c.innerHTML = "";
+      const container = document.getElementById("catalog");
+      container.innerHTML = "";
       items.forEach(i => {
         cart[i.id] = 0;
-        c.innerHTML += `
+        container.innerHTML += `
           <div class="item-card">
             <div>
               <div class="item-title">${i.name}</div>
@@ -341,25 +411,26 @@
 
     function updateQty(id, delta) {
       const item = items.find(x => x.id === id);
-      const cur = cart[id] || 0;
-      const next = cur + delta;
-      const max = Math.min(item.stock, item.limit);
+      const current = cart[id] || 0;
+      const next = current + delta;
+      const maxAllowed = Math.min(item.stock, item.limit);
 
-      if (next >= 0 && next <= max) {
+      if (next >= 0 && next <= maxAllowed) {
         cart[id] = next;
         document.getElementById(`qty_${id}`).innerText = next;
         document.getElementById(`btn_sub_${id}`).disabled = (next === 0);
-        document.getElementById(`btn_add_${id}`).disabled = (next === max);
+        document.getElementById(`btn_add_${id}`).disabled = (next === maxAllowed);
         updateSummary();
       }
     }
 
     function updateSummary() {
       const total = Object.values(cart).reduce((a, b) => a + b, 0);
-      document.getElementById("submitBtn").innerText = total > 0 ? `ОТПРАВИТЬ ЗАЯВКУ (${total})` : "ОТПРАВИТЬ ЗАЯВКУ";
+      const btn = document.getElementById("submitBtn");
+      btn.innerText = total > 0 ? `ОТПРАВИТЬ ЗАЯВКУ (${total})` : "ОТПРАВИТЬ ЗАЯВКУ";
     }
 
-    // Обработка нескольких фото
+    // Обработка фото
     const photoInput = document.getElementById("photoInput");
     photoInput.addEventListener("change", function() {
       if (this.files) {
@@ -378,18 +449,18 @@
       selectedFiles.forEach((file, idx) => {
         const item = document.createElement("div");
         item.className = "photo-item";
-        
+
         const info = document.createElement("div");
         info.className = "photo-info";
-        
+
         const img = document.createElement("img");
         img.className = "photo-thumb";
         img.src = URL.createObjectURL(file);
-        
+
         const name = document.createElement("div");
         name.className = "photo-name";
         name.innerText = file.name;
-        
+
         info.appendChild(img);
         info.appendChild(name);
 
@@ -410,6 +481,7 @@
       document.getElementById("uploadZone").style.display = selectedFiles.length >= 5 ? "none" : "block";
     }
 
+    // Сжатие изображения через Canvas (до ~250 КБ)
     function compressImage(file) {
       return new Promise(resolve => {
         const reader = new FileReader();
@@ -433,34 +505,53 @@
     // Отправка формы
     async function submitForm() {
       hideErr();
+
       const fio = document.getElementById("fio").value.trim();
       const inn = document.getElementById("inn").value.trim();
       const category = document.getElementById("category").value;
 
-      if (fio.length < 5 || fio.split(" ").length < 2) return showErr("Введите полное ФИО (минимум Имя и Фамилия).");
-      if (!/^\d{10,12}$/.test(inn)) return showErr("ИНН должен быть из 10 или 12 цифр.");
-      if (selectedFiles.length === 0) return showErr("Прикрепите хотя бы 1 фото документа.");
+      if (fio.length < 5 || fio.split(" ").length < 2) {
+        showErr("Введите полное ФИО (минимум Имя и Фамилия).");
+        return;
+      }
+      if (!/^\d{10,12}$/.test(inn)) {
+        showErr("ИНН должен состоять из 10 или 12 цифр.");
+        return;
+      }
+      if (selectedFiles.length === 0) {
+        showErr("Прикрепите хотя бы 1 фото подтверждающего документа.");
+        return;
+      }
 
       const finalCart = [];
       for (const [k, v] of Object.entries(cart)) {
         if (v > 0) finalCart.push({ id: Number(k), qty: v });
       }
-      if (finalCart.length === 0) return showErr("Выберите хотя бы один товар.");
+
+      if (finalCart.length === 0) {
+        showErr("Выберите хотя бы один товар из списка помощи.");
+        return;
+      }
 
       const btn = document.getElementById("submitBtn");
       btn.disabled = true;
       btn.innerText = "Сжатие и отправка...";
 
       try {
-        // Сжимаем все выбранные фото
+        // Сжимаем фото перед отправкой
         const compressedPhotos = [];
         for (let file of selectedFiles) {
           const b64 = await compressImage(file);
           compressedPhotos.push({ base64: b64, name: file.name });
         }
 
+        // Извлекаем пользователя Telegram
+        const tgUser = tg?.initDataUnsafe?.user;
+
         const payload = {
           initData: tg?.initData || "",
+          userId: tgUser?.id || null,
+          username: tgUser?.username || "",
           fio: fio,
           inn: inn,
           category: category,
@@ -479,9 +570,9 @@
 
         if (ans.status === "success") {
           if (tg?.showAlert) {
-            tg.showAlert(`✅ Заявка №${ans.requestId} принята!`, () => tg.close());
+            tg.showAlert(`✅ Заявка №${ans.requestId} успешно зарегистрирована!`, () => tg.close());
           } else {
-            alert(`✅ Заявка №${ans.requestId} принята!`);
+            alert(`✅ Заявка №${ans.requestId} успешно зарегистрирована!`);
           }
         } else {
           showErr(ans.message);
@@ -489,7 +580,7 @@
       } catch (e) {
         btn.disabled = false;
         btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
-        showErr("Ошибка сети. Попробуйте еще раз.");
+        showErr("Ошибка сети при отправке. Попробуйте еще раз.");
       }
     }
 
