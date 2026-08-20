@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title id="txt_page_title">Гуманітарна допомога</title>
+  <title id="txt_page_title"></title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -40,10 +40,12 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Відступ знизу, щоб контент не перекривався фіксованою кнопкою */
     .wrap { 
       width: 100%; 
       max-width: 100%; 
       padding-bottom: 120px; 
+      display: none; /* Приховано до завантаження текстів із таблиці */
     }
 
     .top { margin-bottom: 16px; }
@@ -231,7 +233,6 @@
       font-weight: 500;
       margin-top: 10px;
       word-break: break-word;
-      scroll-margin-bottom: 100px;
     }
 
     .bar {
@@ -242,7 +243,7 @@
       background: var(--card);
       border-top: 1px solid var(--border);
       padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
-      display: flex; 
+      display: none; /* З'явиться після завантаження даних */
       justify-content: center;
       z-index: 1000;
       box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
@@ -267,57 +268,62 @@
     }
     #blockScreen h2 { font-size: 18px; margin-bottom: 10px; }
     #blockScreen p { font-size: 14px; color: var(--muted); }
+
+    #globalLoader {
+      text-align: center;
+      padding: 50px 20px;
+      font-size: 14px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
 
+<!-- Екран блокування (для звичайного браузера) -->
 <div id="blockScreen">
-  <h2 id="txt_block_screen_title">⛔ Доступ заборонено</h2>
-  <p id="txt_block_screen_desc">Ця форма доступна виключно всередині Telegram-бота.<br>Будь ласка, відкрийте бота в додатку Telegram.</p>
+  <h2 id="txt_block_screen_title"></h2>
+  <p id="txt_block_screen_desc"></p>
 </div>
 
+<!-- Спінер/повідомлення початкового завантаження -->
+<div id="globalLoader">Завантаження...</div>
+
+<!-- Основна форма (тексти підставляються з Google Таблиці) -->
 <div class="wrap" id="mainWrap">
   <div class="top">
-    <h1 id="txt_header_title">Заявка на допомогу</h1>
-    <p id="txt_header_sub">Заповніть форму для отримання ТМЦ</p>
+    <h1 id="txt_header_title"></h1>
+    <p id="txt_header_sub"></p>
   </div>
 
   <div class="section">
-    <div class="section-title" id="txt_sec_user">👤 Дані заявника</div>
+    <div class="section-title" id="txt_sec_user"></div>
     <div class="field">
-      <label for="fio" id="txt_lbl_fio">ПІБ</label>
-      <input id="fio" type="text" placeholder="Шевченко Тарас Григорович">
+      <label for="fio" id="txt_lbl_fio"></label>
+      <input id="fio" type="text">
     </div>
     <div class="field">
-      <label for="inn" id="txt_lbl_inn">ІПН (10 або 12 цифр)</label>
-      <input id="inn" type="number" placeholder="1234567890" inputmode="numeric">
+      <label for="inn" id="txt_lbl_inn"></label>
+      <input id="inn" type="number" inputmode="numeric">
     </div>
     <div class="field">
-      <label for="category" id="txt_lbl_category">Категорія</label>
-      <select id="category">
-        <option value="ВПО">ВПО (переселенці)</option>
-        <option value="Багатодітна сім'я">Багатодітна сім'я</option>
-        <option value="Пенсіонер">Пенсіонер (65+)</option>
-        <option value="Інвалідність">Особа з інвалідністю</option>
-        <option value="Втрата житла">Втрата житла</option>
-      </select>
+      <label for="category" id="txt_lbl_category"></label>
+      <select id="category"></select>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title" id="txt_sec_docs">📄 Документи</div>
+    <div class="section-title" id="txt_sec_docs"></div>
     <label class="upload-area" id="uploadZone">
       <input type="file" id="photoInput" accept="image/*" multiple>
       <div class="icon">📷</div>
-      <div class="label" id="uploadLabel">Обрати фото</div>
-      <div class="sub" id="txt_sub_upload">Паспорт, довідка ВПО — до 10 шт.</div>
+      <div class="label" id="uploadLabel"></div>
+      <div class="sub" id="txt_sub_upload"></div>
     </label>
     <div class="photo-list" id="photoList"></div>
   </div>
 
   <div class="section">
-    <div class="section-title" id="txt_sec_catalog">📦 Доступна допомога</div>
-    <div id="loader" style="text-align:center;color:var(--muted);padding:12px 0;font-size:12px;">Завантаження…</div>
+    <div class="section-title" id="txt_sec_catalog"></div>
     <div id="catalog"></div>
   </div>
 
@@ -325,7 +331,7 @@
     <div class="consent-block" id="consentBlock">
       <label class="consent-label">
         <input type="checkbox" id="consentCheck" onchange="document.getElementById('consentBlock').classList.remove('has-error'); hideErr();">
-        <span id="txt_consent_text">Я надаю згоду на обробку персональних даних для оформлення заявки на отримання гуманітарної допомоги.</span>
+        <span id="txt_consent_text"></span>
       </label>
     </div>
     <div id="err" class="error"></div>
@@ -333,7 +339,7 @@
 </div>
 
 <div class="bar" id="barWrap">
-  <button class="send" id="sendBtn" onclick="submitForm()">НАДІСЛАТИ ЗАЯВКУ</button>
+  <button class="send" id="sendBtn" onclick="submitForm()"></button>
 </div>
 
 <script>
@@ -342,11 +348,13 @@ const MAX_PHOTOS = 10;
 
 const tg = window.Telegram?.WebApp;
 
+// Перевірка Telegram WebApp
 const isTg = !!(tg && tg.initData && tg.initData.length > 5);
 if (!isTg) {
-  document.getElementById("mainWrap").style.display = "none";
-  document.getElementById("barWrap").style.display = "none";
+  document.getElementById("globalLoader").style.display = "none";
   document.getElementById("blockScreen").style.display = "block";
+  document.getElementById("txt_block_screen_title").textContent = "⛔ Доступ заборонено";
+  document.getElementById("txt_block_screen_desc").innerHTML = "Ця форма доступна виключно всередині Telegram-бота.<br>Будь ласка, відкрийте бота в додатку Telegram.";
 } else {
   try { tg.ready(); tg.expand(); } catch (_) {}
 }
@@ -356,74 +364,74 @@ let cart = {};
 let photos = [];
 let appTexts = {};
 
+// Підстановка всіх текстів із таблиці в DOM-елементи
 function applyTexts(texts) {
   if (!texts) return;
   appTexts = texts;
 
-  if (texts.page_title) {
-    document.title = texts.page_title;
-    const el = document.getElementById("txt_page_title");
-    if (el) el.textContent = texts.page_title;
-  }
-  if (texts.block_screen_title) document.getElementById("txt_block_screen_title").textContent = texts.block_screen_title;
-  if (texts.block_screen_desc) document.getElementById("txt_block_screen_desc").innerHTML = texts.block_screen_desc.replace(/\n/g, "<br>");
-  if (texts.header_title) document.getElementById("txt_header_title").textContent = texts.header_title;
-  if (texts.header_sub) document.getElementById("txt_header_sub").textContent = texts.header_sub;
-  if (texts.sec_user) document.getElementById("txt_sec_user").textContent = texts.sec_user;
-  if (texts.lbl_fio) document.getElementById("txt_lbl_fio").textContent = texts.lbl_fio;
-  if (texts.plh_fio) document.getElementById("fio").placeholder = texts.plh_fio;
-  if (texts.lbl_inn) document.getElementById("txt_lbl_inn").textContent = texts.lbl_inn;
-  if (texts.plh_inn) document.getElementById("inn").placeholder = texts.plh_inn;
-  if (texts.lbl_category) document.getElementById("txt_lbl_category").textContent = texts.lbl_category;
-  if (texts.sec_docs) document.getElementById("txt_sec_docs").textContent = texts.sec_docs;
-  if (texts.btn_upload) document.getElementById("uploadLabel").textContent = texts.btn_upload;
-  if (texts.sub_upload) document.getElementById("txt_sub_upload").textContent = texts.sub_upload;
-  if (texts.sec_catalog) document.getElementById("txt_sec_catalog").textContent = texts.sec_catalog;
-  if (texts.consent_text) document.getElementById("txt_consent_text").textContent = texts.consent_text;
-  if (texts.btn_submit) document.getElementById("sendBtn").textContent = texts.btn_submit;
+  document.title = texts.page_title || "";
+  document.getElementById("txt_page_title").textContent = texts.page_title || "";
+  document.getElementById("txt_block_screen_title").textContent = texts.block_screen_title || "";
+  document.getElementById("txt_block_screen_desc").innerHTML = (texts.block_screen_desc || "").replace(/\n/g, "<br>");
+  
+  document.getElementById("txt_header_title").textContent = texts.header_title || "";
+  document.getElementById("txt_header_sub").textContent = texts.header_sub || "";
+  document.getElementById("txt_sec_user").textContent = texts.sec_user || "";
+  document.getElementById("txt_lbl_fio").textContent = texts.lbl_fio || "";
+  document.getElementById("fio").placeholder = texts.plh_fio || "";
+  document.getElementById("txt_lbl_inn").textContent = texts.lbl_inn || "";
+  document.getElementById("inn").placeholder = texts.plh_inn || "";
+  document.getElementById("txt_lbl_category").textContent = texts.lbl_category || "";
+  
+  document.getElementById("txt_sec_docs").textContent = texts.sec_docs || "";
+  document.getElementById("uploadLabel").textContent = texts.btn_upload || "";
+  document.getElementById("txt_sub_upload").textContent = texts.sub_upload || "";
+  
+  document.getElementById("txt_sec_catalog").textContent = texts.sec_catalog || "";
+  document.getElementById("txt_consent_text").textContent = texts.consent_text || "";
+  document.getElementById("sendBtn").textContent = texts.btn_submit || "";
 
-  // Динамічні категорії з таблиці
+  // Динамічний випадаючий список категорій із таблиці
   if (texts.categories_list) {
     const cats = texts.categories_list.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
-    if (cats.length) {
-      const sel = document.getElementById("category");
-      sel.innerHTML = "";
-      cats.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        sel.appendChild(opt);
-      });
-    }
+    const sel = document.getElementById("category");
+    sel.innerHTML = "";
+    cats.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      sel.appendChild(opt);
+    });
   }
 }
 
-function loadCatalog() {
-  const el = document.getElementById("loader");
-  el.textContent = "Завантаження…";
-  el.style.display = "block";
-
+// Завантаження каталогу + текстів з Apps Script
+function initApp() {
   fetch(API_URL)
     .then(r => r.json())
     .then(res => {
-      el.style.display = "none";
+      document.getElementById("globalLoader").style.display = "none";
+
       if (res.texts) {
         applyTexts(res.texts);
       }
+
       if (res.status === "success" && res.items && res.items.length) {
         items = res.items;
         renderCatalog();
+        document.getElementById("mainWrap").style.display = "block";
+        document.getElementById("barWrap").style.display = "flex";
       } else {
-        el.textContent = res.message || "Немає доступних товарів.";
-        el.style.display = "block";
+        document.getElementById("globalLoader").textContent = res.message || "Немає доступних товарів.";
+        document.getElementById("globalLoader").style.display = "block";
       }
     })
     .catch(e => {
-      el.innerHTML = `Помилка зв'язку з сервером. Спробуйте пізніше.`;
-      el.style.display = "block";
+      document.getElementById("globalLoader").textContent = "Помилка зв'язку з сервером. Спробуйте пізніше.";
+      document.getElementById("globalLoader").style.display = "block";
     });
 }
-if (isTg) loadCatalog();
+if (isTg) initApp();
 
 function renderCatalog() {
   const c = document.getElementById("catalog");
@@ -498,7 +506,7 @@ function refreshBtn() {
   document.getElementById("sendBtn").textContent = t ? `${baseTxt} (${t})` : baseTxt;
 }
 
-/* Стиснення фото до 10 шт. */
+/* Обробка та стиснення фото */
 document.getElementById("photoInput").addEventListener("change", async function(e) {
   const files = e.target.files;
   if (!files || !files.length) return;
@@ -578,14 +586,14 @@ async function submitForm() {
 
   if (fio.length < 5 || fio.split(/\s+/).length < 2) {
     document.getElementById("fio").focus();
-    return showErr(appTexts.err_fio || "Вкажіть повне ПІБ (мінімум 2 слова).");
+    return showErr(appTexts.err_fio);
   }
   if (!/^\d{10,12}$/.test(inn)) {
     document.getElementById("inn").focus();
-    return showErr(appTexts.err_inn || "ІПН повинен містити 10 або 12 цифр.");
+    return showErr(appTexts.err_inn);
   }
   if (!photos.length) {
-    return showErr(appTexts.err_photo || "Долучіть хоча б одне фото документа.");
+    return showErr(appTexts.err_photo);
   }
 
   const cartArr = Object.entries(cart)
@@ -593,12 +601,12 @@ async function submitForm() {
     .map(([k, v]) => ({ id: String(k), qty: v }));
 
   if (!cartArr.length) {
-    return showErr(appTexts.err_cart || "Оберіть хоча б один товар зі списку.");
+    return showErr(appTexts.err_cart);
   }
 
   if (!document.getElementById("consentCheck").checked) {
     document.getElementById("consentBlock").classList.add("has-error");
-    return showErr(appTexts.err_consent || "⚠️ Необхідно надати згоду на обробку персональних даних!");
+    return showErr(appTexts.err_consent);
   }
 
   const btn = document.getElementById("sendBtn");
@@ -647,7 +655,7 @@ async function submitForm() {
 
 function showErr(m) {
   const el = document.getElementById("err");
-  el.textContent = m;
+  el.textContent = m || "Помилка валідації";
   el.style.display = "block";
   
   setTimeout(() => {
