@@ -2,8 +2,8 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Гуманітарна допомога</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title id="txt_page_title">Гуманітарна допомога</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -40,7 +40,12 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .wrap { width: 100%; max-width: 100%; padding-bottom: 80px; }
+    .wrap { 
+      width: 100%; 
+      max-width: 100%; 
+      padding-bottom: 120px; 
+    }
+
     .top { margin-bottom: 16px; }
     .top h1 { font-size: 19px; font-weight: 700; line-height: 1.3; }
     .top p { font-size: 13px; color: var(--muted); margin-top: 3px; }
@@ -143,7 +148,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Поля кількості товару (кнопки + інпут для ручного введення) ── */
     .item {
       display: flex;
       align-items: center;
@@ -201,13 +205,18 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px;
+      transition: border-color 0.2s;
+    }
+    .consent-block.has-error {
+      border-color: var(--danger);
+      background: var(--danger-bg);
     }
     .consent-label {
       display: flex; align-items: flex-start; gap: 8px;
       cursor: pointer; font-size: 12px; line-height: 1.4; color: var(--text);
     }
     .consent-label input[type="checkbox"] {
-      width: 16px; height: 16px; margin-top: 1px; flex-shrink: 0;
+      width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0;
       accent-color: var(--accent); cursor: pointer;
     }
 
@@ -216,30 +225,41 @@
       background: var(--danger-bg);
       border: 1px solid #fecaca;
       color: var(--danger);
-      padding: 10px;
+      padding: 10px 12px;
       border-radius: 8px;
-      font-size: 12px;
-      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 10px;
       word-break: break-word;
+      scroll-margin-bottom: 100px;
     }
 
     .bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
+      position: fixed; 
+      bottom: 0; 
+      left: 0; 
+      right: 0;
       background: var(--card);
       border-top: 1px solid var(--border);
-      padding: 10px 12px;
-      display: flex; justify-content: center;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+      display: flex; 
+      justify-content: center;
+      z-index: 1000;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
     }
     .send {
-      width: 100%; height: 44px;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 600;
+      width: 100%; 
+      height: 46px;
+      background: var(--accent); 
+      color: #fff;
+      border: none; 
+      border-radius: 10px;
+      font-size: 14px; 
+      font-weight: 700;
       cursor: pointer;
     }
     .send:disabled { opacity: 0.5; cursor: default; }
 
-    /* Екран блокування для браузера */
     #blockScreen {
       display: none;
       text-align: center;
@@ -252,28 +272,28 @@
 <body>
 
 <div id="blockScreen">
-  <h2>⛔ Доступ заборонено</h2>
-  <p>Ця форма доступна виключно всередині Telegram-бота.<br>Будь ласка, відкрийте бота в додатку Telegram.</p>
+  <h2 id="txt_block_screen_title">⛔ Доступ заборонено</h2>
+  <p id="txt_block_screen_desc">Ця форма доступна виключно всередині Telegram-бота.<br>Будь ласка, відкрийте бота в додатку Telegram.</p>
 </div>
 
 <div class="wrap" id="mainWrap">
   <div class="top">
-    <h1>Заявка на допомогу</h1>
-    <p>Заповніть форму для отримання ТМЦ</p>
+    <h1 id="txt_header_title">Заявка на допомогу</h1>
+    <p id="txt_header_sub">Заповніть форму для отримання ТМЦ</p>
   </div>
 
   <div class="section">
-    <div class="section-title">👤 Дані заявника</div>
+    <div class="section-title" id="txt_sec_user">👤 Дані заявника</div>
     <div class="field">
-      <label for="fio">ПІБ</label>
+      <label for="fio" id="txt_lbl_fio">ПІБ</label>
       <input id="fio" type="text" placeholder="Шевченко Тарас Григорович">
     </div>
     <div class="field">
-      <label for="inn">ІПН (10 або 12 цифр)</label>
+      <label for="inn" id="txt_lbl_inn">ІПН (10 або 12 цифр)</label>
       <input id="inn" type="number" placeholder="1234567890" inputmode="numeric">
     </div>
     <div class="field">
-      <label for="category">Категорія</label>
+      <label for="category" id="txt_lbl_category">Категорія</label>
       <select id="category">
         <option value="ВПО">ВПО (переселенці)</option>
         <option value="Багатодітна сім'я">Багатодітна сім'я</option>
@@ -285,27 +305,27 @@
   </div>
 
   <div class="section">
-    <div class="section-title">📄 Документи</div>
+    <div class="section-title" id="txt_sec_docs">📄 Документи</div>
     <label class="upload-area" id="uploadZone">
       <input type="file" id="photoInput" accept="image/*" multiple>
       <div class="icon">📷</div>
       <div class="label" id="uploadLabel">Обрати фото</div>
-      <div class="sub">Паспорт, довідка ВПО — до 5 шт.</div>
+      <div class="sub" id="txt_sub_upload">Паспорт, довідка ВПО — до 10 шт.</div>
     </label>
     <div class="photo-list" id="photoList"></div>
   </div>
 
   <div class="section">
-    <div class="section-title">📦 Доступна допомога</div>
+    <div class="section-title" id="txt_sec_catalog">📦 Доступна допомога</div>
     <div id="loader" style="text-align:center;color:var(--muted);padding:12px 0;font-size:12px;">Завантаження…</div>
     <div id="catalog"></div>
   </div>
 
   <div class="section">
-    <div class="consent-block">
+    <div class="consent-block" id="consentBlock">
       <label class="consent-label">
-        <input type="checkbox" id="consentCheck">
-        <span>Я надаю згоду на обробку персональних даних для оформлення заявки на отримання гуманітарної допомоги.</span>
+        <input type="checkbox" id="consentCheck" onchange="document.getElementById('consentBlock').classList.remove('has-error'); hideErr();">
+        <span id="txt_consent_text">Я надаю згоду на обробку персональних даних для оформлення заявки на отримання гуманітарної допомоги.</span>
       </label>
     </div>
     <div id="err" class="error"></div>
@@ -318,10 +338,10 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
+const MAX_PHOTOS = 10;
 
 const tg = window.Telegram?.WebApp;
 
-// Блокування прямого доступу через звичайний браузер
 const isTg = !!(tg && tg.initData && tg.initData.length > 5);
 if (!isTg) {
   document.getElementById("mainWrap").style.display = "none";
@@ -334,16 +354,62 @@ if (!isTg) {
 let items = [];
 let cart = {};
 let photos = [];
+let appTexts = {};
+
+function applyTexts(texts) {
+  if (!texts) return;
+  appTexts = texts;
+
+  if (texts.page_title) {
+    document.title = texts.page_title;
+    const el = document.getElementById("txt_page_title");
+    if (el) el.textContent = texts.page_title;
+  }
+  if (texts.block_screen_title) document.getElementById("txt_block_screen_title").textContent = texts.block_screen_title;
+  if (texts.block_screen_desc) document.getElementById("txt_block_screen_desc").innerHTML = texts.block_screen_desc.replace(/\n/g, "<br>");
+  if (texts.header_title) document.getElementById("txt_header_title").textContent = texts.header_title;
+  if (texts.header_sub) document.getElementById("txt_header_sub").textContent = texts.header_sub;
+  if (texts.sec_user) document.getElementById("txt_sec_user").textContent = texts.sec_user;
+  if (texts.lbl_fio) document.getElementById("txt_lbl_fio").textContent = texts.lbl_fio;
+  if (texts.plh_fio) document.getElementById("fio").placeholder = texts.plh_fio;
+  if (texts.lbl_inn) document.getElementById("txt_lbl_inn").textContent = texts.lbl_inn;
+  if (texts.plh_inn) document.getElementById("inn").placeholder = texts.plh_inn;
+  if (texts.lbl_category) document.getElementById("txt_lbl_category").textContent = texts.lbl_category;
+  if (texts.sec_docs) document.getElementById("txt_sec_docs").textContent = texts.sec_docs;
+  if (texts.btn_upload) document.getElementById("uploadLabel").textContent = texts.btn_upload;
+  if (texts.sub_upload) document.getElementById("txt_sub_upload").textContent = texts.sub_upload;
+  if (texts.sec_catalog) document.getElementById("txt_sec_catalog").textContent = texts.sec_catalog;
+  if (texts.consent_text) document.getElementById("txt_consent_text").textContent = texts.consent_text;
+  if (texts.btn_submit) document.getElementById("sendBtn").textContent = texts.btn_submit;
+
+  // Динамічні категорії з таблиці
+  if (texts.categories_list) {
+    const cats = texts.categories_list.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+    if (cats.length) {
+      const sel = document.getElementById("category");
+      sel.innerHTML = "";
+      cats.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      });
+    }
+  }
+}
 
 function loadCatalog() {
   const el = document.getElementById("loader");
-  el.textContent = "Завантаження каталогу…";
+  el.textContent = "Завантаження…";
   el.style.display = "block";
 
   fetch(API_URL)
     .then(r => r.json())
     .then(res => {
       el.style.display = "none";
+      if (res.texts) {
+        applyTexts(res.texts);
+      }
       if (res.status === "success" && res.items && res.items.length) {
         items = res.items;
         renderCatalog();
@@ -353,7 +419,7 @@ function loadCatalog() {
       }
     })
     .catch(e => {
-      el.innerHTML = `Помилка зв'язку з базою. Спробуйте пізніше.`;
+      el.innerHTML = `Помилка зв'язку з сервером. Спробуйте пізніше.`;
       el.style.display = "block";
     });
 }
@@ -427,18 +493,19 @@ function onBlurQty(id, el) {
 }
 
 function refreshBtn() {
+  const baseTxt = appTexts.btn_submit || "НАДІСЛАТИ ЗАЯВКУ";
   const t = Object.values(cart).reduce((a, b) => a + b, 0);
-  document.getElementById("sendBtn").textContent = t ? `НАДІСЛАТИ ЗАЯВКУ (${t})` : "НАДІСЛАТИ ЗАЯВКУ";
+  document.getElementById("sendBtn").textContent = t ? `${baseTxt} (${t})` : baseTxt;
 }
 
-/* ── Стиснення фото ── */
+/* Стиснення фото до 10 шт. */
 document.getElementById("photoInput").addEventListener("change", async function(e) {
   const files = e.target.files;
   if (!files || !files.length) return;
   document.getElementById("uploadLabel").textContent = "Обробка…";
 
   for (const f of files) {
-    if (photos.length >= 5) break;
+    if (photos.length >= MAX_PHOTOS) break;
     try {
       const b64 = await compressPhoto(f);
       if (b64) {
@@ -447,7 +514,7 @@ document.getElementById("photoInput").addEventListener("change", async function(
     } catch (_) {}
   }
   this.value = "";
-  document.getElementById("uploadLabel").textContent = "Обрати фото";
+  document.getElementById("uploadLabel").textContent = appTexts.btn_upload || "Обрати фото";
   renderPhotos();
 });
 
@@ -466,7 +533,7 @@ function renderPhotos() {
     list.appendChild(row);
   });
 
-  document.getElementById("uploadZone").style.display = photos.length >= 5 ? "none" : "";
+  document.getElementById("uploadZone").style.display = photos.length >= MAX_PHOTOS ? "none" : "";
 }
 
 function delPhoto(i) {
@@ -501,26 +568,24 @@ function compressPhoto(file) {
   });
 }
 
-/* ── Відправка ── */
+/* Відправка форми */
 async function submitForm() {
   hideErr();
-
-  if (!document.getElementById("consentCheck").checked) {
-    return showErr("Необхідно надати згоду на обробку персональних даних.");
-  }
 
   const fio = document.getElementById("fio").value.trim();
   const inn = document.getElementById("inn").value.trim();
   const cat = document.getElementById("category").value;
 
   if (fio.length < 5 || fio.split(/\s+/).length < 2) {
-    return showErr("Вкажіть повне ПІБ (мінімум 2 слова).");
+    document.getElementById("fio").focus();
+    return showErr(appTexts.err_fio || "Вкажіть повне ПІБ (мінімум 2 слова).");
   }
   if (!/^\d{10,12}$/.test(inn)) {
-    return showErr("ІПН повинен містити 10 або 12 цифр.");
+    document.getElementById("inn").focus();
+    return showErr(appTexts.err_inn || "ІПН повинен містити 10 або 12 цифр.");
   }
   if (!photos.length) {
-    return showErr("Долучіть хоча б одне фото документа.");
+    return showErr(appTexts.err_photo || "Долучіть хоча б одне фото документа.");
   }
 
   const cartArr = Object.entries(cart)
@@ -528,7 +593,12 @@ async function submitForm() {
     .map(([k, v]) => ({ id: String(k), qty: v }));
 
   if (!cartArr.length) {
-    return showErr("Оберіть хоча б один товар.");
+    return showErr(appTexts.err_cart || "Оберіть хоча б один товар зі списку.");
+  }
+
+  if (!document.getElementById("consentCheck").checked) {
+    document.getElementById("consentBlock").classList.add("has-error");
+    return showErr(appTexts.err_consent || "⚠️ Необхідно надати згоду на обробку персональних даних!");
   }
 
   const btn = document.getElementById("sendBtn");
@@ -558,7 +628,6 @@ async function submitForm() {
     const ans = await res.json();
 
     if (ans.status === "success") {
-      // ⚠️ ЖОДНИХ ALERT-ПОВІДОМЛЕНЬ — МИТТЄВО ЗАКРИВАЄМО ВІКНО БОТА
       if (tg && tg.close) {
         tg.close();
       } else {
@@ -566,12 +635,12 @@ async function submitForm() {
       }
     } else {
       btn.disabled = false;
-      btn.textContent = "НАДІСЛАТИ ЗАЯВКУ";
+      refreshBtn();
       showErr(ans.message || "Помилка прийому заявки.");
     }
   } catch (err) {
     btn.disabled = false;
-    btn.textContent = "НАДІСЛАТИ ЗАЯВКУ";
+    refreshBtn();
     showErr("Помилка відправки. Перевірте з'єднання з мережею.");
   }
 }
@@ -580,9 +649,15 @@ function showErr(m) {
   const el = document.getElementById("err");
   el.textContent = m;
   el.style.display = "block";
+  
+  setTimeout(() => {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 50);
 }
+
 function hideErr() {
-  document.getElementById("err").style.display = "none";
+  const el = document.getElementById("err");
+  el.style.display = "none";
 }
 </script>
 </body>
