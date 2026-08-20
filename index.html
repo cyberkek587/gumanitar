@@ -2,120 +2,522 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Гуманитарная помощь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: var(--tg-theme-bg-color, #f4f4f5);
-      --card: var(--tg-theme-secondary-bg-color, #ffffff);
+      --bg: var(--tg-theme-bg-color, #f4f4f7);
+      --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
       --text: var(--tg-theme-text-color, #18181b);
       --hint: var(--tg-theme-hint-color, #71717a);
+      --accent: var(--tg-theme-button-color, #2563eb);
+      --accent-text: var(--tg-theme-button-text-color, #ffffff);
+      --border: rgba(0, 0, 0, 0.08);
+      --radius: 16px;
+      --radius-sm: 10px;
     }
-    body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 12px; margin: 0; }
-    .card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-    h3 { margin: 0 0 10px 0; font-size: 15px; }
-    label { font-size: 13px; color: var(--hint); display: block; margin-top: 8px; }
-    input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #e4e4e7; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: var(--bg); color: var(--text); }
-    .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f4f4f5; }
-    .counter { display: flex; align-items: center; gap: 10px; }
-    .btn-cnt { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e4e4e7; background: var(--card); font-size: 18px; font-weight: bold; cursor: pointer; color: var(--text); }
-    .qty { font-weight: bold; width: 16px; text-align: center; }
-    .error { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; font-weight: 500; }
-    #loader { text-align: center; color: var(--hint); padding: 20px; font-size: 14px; }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --border: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 520px;
+      padding-bottom: 90px;
+    }
+
+    /* Шапка */
+    .header {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 14px;
+      color: var(--hint);
+      margin: 0;
+    }
+
+    /* Карточки */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Поля ввода */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--hint);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    /* Зона загрузки фото */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg);
+      transition: background-color 0.2s, border-color 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover {
+      border-color: var(--accent);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .upload-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .upload-text {
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0;
+    }
+    .upload-hint {
+      font-size: 12px;
+      color: var(--hint);
+      margin: 4px 0 0 0;
+    }
+
+    /* Превью фото */
+    .preview-container {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .preview-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+    }
+    .preview-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+    .preview-name {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .btn-remove {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    /* Каталог ТМЦ */
+    .item-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .item-card:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .item-card:first-child {
+      padding-top: 0;
+    }
+    .item-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .item-badges {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--hint);
+      border: 1px solid var(--border);
+    }
+
+    /* Счетчик */
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .btn-step {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .btn-step:active {
+      transform: scale(0.92);
+    }
+    .btn-step:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .step-val {
+      min-width: 20px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* Лоадер и Ошибки */
+    .skeleton-loader {
+      text-align: center;
+      padding: 20px;
+      color: var(--hint);
+      font-size: 14px;
+    }
+    .alert-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+      font-weight: 500;
+    }
+
+    /* Плавающая кнопка для Desktop / Fallback */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+    }
+    .bottom-bar-inner {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-submit {
+      width: 100%;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h3>👤 Ваши данные</h3>
-    <label>ФИО полностью</label>
-    <input type="text" id="fio" placeholder="Иванов Иван Иванович" required>
+  <div class="app-container">
+    
+    <div class="header">
+      <h1>Заявка на помощь</h1>
+      <p>Заполните форму для регистрации на получение ТМЦ</p>
+    </div>
 
-    <label>ИНН (10 или 12 цифр)</label>
-    <input type="number" id="inn" placeholder="1234567890" required>
+    <!-- 1. Данные заявителя -->
+    <div class="card">
+      <div class="card-title">👤 Данные заявителя</div>
+      
+      <div class="form-group">
+        <label>ФИО полностью</label>
+        <input type="text" id="fio" placeholder="Иванов Иван Иванович" autocomplete="name" required>
+      </div>
 
-    <label>Категория</label>
-    <select id="category">
-      <option value="ВПЛ">ВПЛ (Переселенцы)</option>
-      <option value="Многодетная семья">Многодетная семья</option>
-      <option value="Пенсионер">Пенсионер (65+)</option>
-      <option value="Инвалидность">Лицо с инвалидностью</option>
-    </select>
+      <div class="form-group">
+        <label>ИНН (10 или 12 цифр)</label>
+        <input type="number" id="inn" placeholder="1234567890" inputmode="numeric" required>
+      </div>
+
+      <div class="form-group">
+        <label>Льготная категория</label>
+        <select id="category">
+          <option value="ВПЛ">ВПЛ (Переселенцы)</option>
+          <option value="Многодетная семья">Многодетная семья</option>
+          <option value="Пенсионер">Пенсионер (65+)</option>
+          <option value="Инвалидность">Лицо с инвалидностью</option>
+          <option value="Утрата жилья">Утрата жилья</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 2. Документы -->
+    <div class="card">
+      <div class="card-title">📄 Подтверждающий документ</div>
+      
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="photoInput" accept="image/*">
+        <div class="upload-icon">📸</div>
+        <p class="upload-text">Нажмите для выбора фото</p>
+        <p class="upload-hint">Паспорт или справка (сжимается автоматически)</p>
+      </div>
+
+      <div class="preview-container" id="previewContainer">
+        <div class="preview-info">
+          <img src="" id="previewImg" class="preview-img" alt="Превью">
+          <div class="preview-name" id="previewName">file.jpg</div>
+        </div>
+        <button type="button" class="btn-remove" onclick="removePhoto()">Удалить</button>
+      </div>
+    </div>
+
+    <!-- 3. Склад -->
+    <div class="card">
+      <div class="card-title">📦 Доступная помощь на складе</div>
+      <div id="loader" class="skeleton-loader">⏳ Загружаем актуальные остатки...</div>
+      <div id="catalog"></div>
+      <div id="err" class="alert-box"></div>
+    </div>
+
   </div>
 
-  <div class="card">
-    <h3>📄 Документ (Справка / Паспорт)</h3>
-    <input type="file" id="photoInput" accept="image/*">
-    <label>Фотография документа (сжимается автоматически)</label>
-  </div>
-
-  <div class="card">
-    <h3>📦 Выбор помощи</h3>
-    <div id="loader">Загрузка склада...</div>
-    <div id="catalog"></div>
-    <div id="err" class="error"></div>
+  <!-- Плавающая кнопка для Desktop / Fallback -->
+  <div class="bottom-bar" id="bottomBar">
+    <div class="bottom-bar-inner">
+      <button class="btn-submit" id="submitBtn" onclick="submitForm()">ОТПРАВИТЬ ЗАЯВКУ</button>
+    </div>
   </div>
 
   <script>
     // ==========================================
-    // ВСТАВЬТЕ СЮДА ВАШ URL ИЗ ШАГА 3 (Apps Script)
+    // ВАША ССЫЛКА НА GOOGLE APPS SCRIPT
     const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
     // ==========================================
 
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
 
     let items = [];
     let cart = {};
+    let selectedFile = null;
 
-    // Загрузка товаров
+    // Виброотклик
+    function haptic(type = 'light') {
+      try {
+        if (tg?.HapticFeedback) {
+          if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+          else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
+          else tg.HapticFeedback.impactOccurred(type);
+        }
+      } catch (e) {}
+    }
+
+    // 1. Загрузка склада
     fetch(API_URL)
       .then(r => r.json())
       .then(res => {
         document.getElementById("loader").style.display = "none";
         if (res.status === "success" && res.items.length > 0) {
           items = res.items;
-          render();
-          tg.MainButton.setText("ОТПРАВИТЬ ЗАЯВКУ").show().onClick(submit);
+          renderCatalog();
         } else {
-          document.getElementById("loader").innerText = "На складе нет доступной помощи.";
+          document.getElementById("loader").innerText = "На складе сейчас нет доступной помощи.";
           document.getElementById("loader").style.display = "block";
+          document.getElementById("submitBtn").disabled = true;
         }
+      })
+      .catch(() => {
+        document.getElementById("loader").innerText = "Ошибка загрузки данных. Проверьте интернет.";
       });
 
-    function render() {
-      const cat = document.getElementById("catalog");
-      cat.innerHTML = "";
+    // 2. Отрисовка каталога
+    function renderCatalog() {
+      const container = document.getElementById("catalog");
+      container.innerHTML = "";
       items.forEach(i => {
         cart[i.id] = 0;
-        cat.innerHTML += `
-          <div class="item-row">
+        container.innerHTML += `
+          <div class="item-card">
             <div>
-              <div style="font-weight: 500;">${i.name}</div>
-              <div style="font-size: 12px; color: var(--hint);">Осталось: ${i.stock} шт. (макс: ${i.limit})</div>
+              <div class="item-title">${i.name}</div>
+              <div class="item-badges">
+                <span class="badge">Остаток: ${i.stock} шт.</span>
+                <span class="badge">Макс: ${i.limit} шт.</span>
+              </div>
             </div>
-            <div class="counter">
-              <button class="btn-cnt" onclick="count(${i.id}, -1)">-</button>
-              <span class="qty" id="q_${i.id}">0</span>
-              <button class="btn-cnt" onclick="count(${i.id}, 1)">+</button>
+            <div class="stepper">
+              <button class="btn-step" id="btn_sub_${i.id}" onclick="updateQty(${i.id}, -1)" disabled>−</button>
+              <span class="step-val" id="qty_${i.id}">0</span>
+              <button class="btn-step" id="btn_add_${i.id}" onclick="updateQty(${i.id}, 1)">+</button>
             </div>
           </div>
         `;
       });
     }
 
-    function count(id, d) {
-      const itm = items.find(x => x.id === id);
-      const val = (cart[id] || 0) + d;
-      if (val >= 0 && val <= Math.min(itm.stock, itm.limit)) {
-        cart[id] = val;
-        document.getElementById(`q_${id}`).innerText = val;
+    // 3. Изменение количества
+    function updateQty(id, delta) {
+      const item = items.find(x => x.id === id);
+      const current = cart[id] || 0;
+      const next = current + delta;
+      const maxAllowed = Math.min(item.stock, item.limit);
+
+      if (next >= 0 && next <= maxAllowed) {
+        cart[id] = next;
+        document.getElementById(`qty_${id}`).innerText = next;
+        document.getElementById(`btn_sub_${id}`).disabled = (next === 0);
+        document.getElementById(`btn_add_${id}`).disabled = (next === maxAllowed);
+        haptic('light');
+        updateSummary();
       }
     }
 
-    // Сжатие изображения
+    function updateSummary() {
+      const total = Object.values(cart).reduce((a, b) => a + b, 0);
+      const btn = document.getElementById("submitBtn");
+      if (total > 0) {
+        btn.innerText = `ОТПРАВИТЬ ЗАЯВКУ (${total})`;
+      } else {
+        btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
+      }
+    }
+
+    // 4. Обработка и превью фото
+    const photoInput = document.getElementById("photoInput");
+    photoInput.addEventListener("change", function(e) {
+      if (this.files && this.files[0]) {
+        selectedFile = this.files[0];
+        document.getElementById("previewName").innerText = selectedFile.name;
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          document.getElementById("previewImg").src = evt.target.result;
+          document.getElementById("uploadZone").style.display = "none";
+          document.getElementById("previewContainer").style.display = "flex";
+        };
+        reader.readAsDataURL(selectedFile);
+        haptic('medium');
+      }
+    });
+
+    function removePhoto() {
+      selectedFile = null;
+      photoInput.value = "";
+      document.getElementById("uploadZone").style.display = "block";
+      document.getElementById("previewContainer").style.display = "none";
+      haptic('light');
+    }
+
+    // 5. Сжатие изображения
     function compressImage(file) {
       return new Promise(resolve => {
         const reader = new FileReader();
@@ -136,59 +538,91 @@
       });
     }
 
-    async function submit() {
-      const errBox = document.getElementById("err");
-      errBox.style.display = "none";
+    // 6. Отправка формы
+    async function submitForm() {
+      hideErr();
 
       const fio = document.getElementById("fio").value.trim();
       const inn = document.getElementById("inn").value.trim();
       const category = document.getElementById("category").value;
-      const fileInput = document.getElementById("photoInput");
 
-      if (fio.length < 5) return showErr("Введите полное ФИО.");
-      if (!/^\d{10,12}$/.test(inn)) return showErr("ИНН должен быть из 10-12 цифр.");
-      if (fileInput.files.length === 0) return showErr("Прикрепите фото документа.");
+      if (fio.length < 5 || fio.split(" ").length < 2) {
+        showErr("Введите полное ФИО (минимум Имя и Фамилия).");
+        return;
+      }
+      if (!/^\d{10,12}$/.test(inn)) {
+        showErr("ИНН должен состоять из 10 или 12 цифр.");
+        return;
+      }
+      if (!selectedFile) {
+        showErr("Пожалуйста, прикрепите фото подтверждающего документа.");
+        return;
+      }
 
       const finalCart = [];
       for (const [k, v] of Object.entries(cart)) {
         if (v > 0) finalCart.push({ id: Number(k), qty: v });
       }
-      if (finalCart.length === 0) return showErr("Выберите хотя бы одну позицию.");
 
-      tg.MainButton.showProgress();
+      if (finalCart.length === 0) {
+        showErr("Выберите хотя бы один товар из списка помощи.");
+        return;
+      }
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.innerText = "Отправка заявки...";
 
       try {
-        const photoBase64 = await compressImage(fileInput.files[0]);
+        const photoBase64 = await compressImage(selectedFile);
+        
+        const payload = {
+          initData: tg?.initData || "",
+          fio: fio,
+          inn: inn,
+          category: category,
+          photoBase64: photoBase64,
+          photoName: selectedFile.name,
+          cart: finalCart
+        };
+
         const res = await fetch(API_URL, {
           method: "POST",
-          body: JSON.stringify({
-            initData: tg.initData,
-            fio: fio,
-            inn: inn,
-            category: category,
-            photoBase64: photoBase64,
-            photoName: fileInput.files[0].name,
-            cart: finalCart
-          })
+          body: JSON.stringify(payload)
         });
+
         const ans = await res.json();
-        tg.MainButton.hideProgress();
+        btn.disabled = false;
+        btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
 
         if (ans.status === "success") {
-          tg.showAlert(`Заявка №${ans.requestId} принята!`, () => tg.close());
+          haptic('success');
+          if (tg?.showAlert) {
+            tg.showAlert(`✅ Заявка №${ans.requestId} успешно зарегистрирована!`, () => tg.close());
+          } else {
+            alert(`✅ Заявка №${ans.requestId} успешно зарегистрирована!`);
+          }
         } else {
+          haptic('error');
           showErr(ans.message);
         }
       } catch (e) {
-        tg.MainButton.hideProgress();
-        showErr("Ошибка сети. Попробуйте снова.");
+        btn.disabled = false;
+        btn.innerText = "ОТПРАВИТЬ ЗАЯВКУ";
+        haptic('error');
+        showErr("Ошибка сети при отправке. Попробуйте еще раз.");
       }
     }
 
-    function showErr(t) {
-      const e = document.getElementById("err");
-      e.innerText = t;
-      e.style.display = "block";
+    function showErr(msg) {
+      const el = document.getElementById("err");
+      el.innerText = msg;
+      el.style.display = "block";
+      haptic('error');
+    }
+
+    function hideErr() {
+      document.getElementById("err").style.display = "none";
     }
   </script>
 </body>
