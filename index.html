@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title id="txt_page_title"></title>
+  <title id="txt_page_title">Гуманітарна допомога</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -13,12 +13,11 @@
       --muted: #6b7280;
       --border: #e5e7eb;
       --accent: #2563eb;
-      --accent-hover: #1d4ed8;
       --danger: #dc2626;
       --danger-bg: #fef2f2;
+      --success: #16a34a;
       --radius: 12px;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #111318;
@@ -29,9 +28,7 @@
         --danger-bg: #2a1518;
       }
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
@@ -40,18 +37,20 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Відступ знизу, щоб контент не перекривався фіксованою кнопкою */
-    .wrap { 
-      width: 100%; 
-      max-width: 100%; 
-      padding-bottom: 120px; 
-      display: none; /* Приховано до завантаження текстів із таблиці */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+      appearance: textfield;
     }
 
+    .wrap { width: 100%; max-width: 100%; padding-bottom: 120px; display: none; }
     .top { margin-bottom: 16px; }
     .top h1 { font-size: 19px; font-weight: 700; line-height: 1.3; }
     .top p { font-size: 13px; color: var(--muted); margin-top: 3px; }
-
     .section {
       background: var(--card);
       border: 1px solid var(--border);
@@ -60,235 +59,84 @@
       margin-bottom: 10px;
     }
     .section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-
     .field { margin-bottom: 10px; }
     .field:last-child { margin-bottom: 0; }
-    .field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
     .field input, .field select {
-      width: 100%;
-      height: 42px;
-      padding: 0 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 15px;
-      background: var(--bg);
-      color: var(--text);
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
+      width: 100%; height: 42px; padding: 0 12px;
+      border: 1px solid var(--border); border-radius: 8px; font-size: 15px;
+      background: var(--bg); color: var(--text); outline: none; -webkit-appearance: none;
     }
     .field select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 32px;
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
     }
-    .field input:focus, .field select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-
     .upload-area {
-      display: block;
-      border: 2px dashed var(--border);
-      border-radius: 8px;
-      padding: 20px 12px;
-      text-align: center;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
+      display: block; border: 2px dashed var(--border); border-radius: 8px;
+      padding: 20px 12px; text-align: center; cursor: pointer; position: relative;
     }
     .upload-area input[type="file"] {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      z-index: 2;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
     }
-    .upload-area .icon { font-size: 22px; margin-bottom: 4px; pointer-events: none; }
-    .upload-area .label { font-size: 14px; font-weight: 500; pointer-events: none; }
-    .upload-area .sub { font-size: 12px; color: var(--muted); margin-top: 2px; pointer-events: none; }
-
+    .upload-area .icon { font-size: 22px; margin-bottom: 4px; }
+    .upload-area .label { font-size: 14px; font-weight: 500; }
+    .upload-area .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .photo-list { margin-top: 8px; }
     .photo-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      background: var(--bg);
-      border-radius: 8px;
-      margin-bottom: 5px;
+      display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+      background: var(--bg); border-radius: 8px; margin-bottom: 5px;
     }
-    .photo-row img {
-      width: 34px; height: 34px;
-      border-radius: 6px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-    .photo-row .name {
-      flex: 1;
-      font-size: 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .photo-row .del {
-      font-size: 11px;
-      color: var(--danger);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      padding: 4px;
-      flex-shrink: 0;
-    }
-
-    .item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .photo-row img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; }
+    .photo-row .name { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .photo-row .del { font-size: 11px; color: var(--danger); background: none; border: none; cursor: pointer; font-weight: 600; padding: 4px; }
+    .item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .item:last-child { border-bottom: none; }
-    .item-info .item-name { font-size: 13px; font-weight: 600; }
-    .item-info .item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-    .qty {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }
+    .item-info .item-name { font-size: 14px; font-weight: 600; }
+    .item-info .item-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .qty { display: flex; align-items: center; gap: 4px; }
     .qty button {
-      width: 32px;
-      height: 32px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--card);
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--card); color: var(--text); font-size: 18px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
     .qty button:disabled { opacity: 0.3; cursor: default; }
     .qty input {
-      width: 46px;
-      height: 32px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text);
-      outline: none;
-      -moz-appearance: textfield;
+      width: 48px; height: 34px; text-align: center; font-size: 14px; font-weight: 600;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text);
     }
-    .qty input::-webkit-outer-spin-button,
-    .qty input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+    .consent-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+    .consent-block.has-error { border-color: var(--danger); background: var(--danger-bg); }
+    .consent-label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 12px; line-height: 1.4; }
+    .consent-label input[type="checkbox"] { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--accent); }
+    .error { display: none; background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
+    
+    .screen-card {
+      display: none; text-align: center; padding: 40px 20px; background: var(--card);
+      border-radius: var(--radius); border: 1px solid var(--border); margin-top: 20px;
     }
-
-    .consent-block {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      transition: border-color 0.2s;
-    }
-    .consent-block.has-error {
-      border-color: var(--danger);
-      background: var(--danger-bg);
-    }
-    .consent-label {
-      display: flex; align-items: flex-start; gap: 8px;
-      cursor: pointer; font-size: 12px; line-height: 1.4; color: var(--text);
-    }
-    .consent-label input[type="checkbox"] {
-      width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0;
-      accent-color: var(--accent); cursor: pointer;
-    }
-
-    .error {
-      display: none;
-      background: var(--danger-bg);
-      border: 1px solid #fecaca;
-      color: var(--danger);
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      margin-top: 10px;
-      word-break: break-word;
-    }
-
+    .screen-card h2 { font-size: 20px; margin-bottom: 8px; }
+    .screen-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    
     .bar {
-      position: fixed; 
-      bottom: 0; 
-      left: 0; 
-      right: 0;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
-      display: none; /* З'явиться після завантаження даних */
-      justify-content: center;
-      z-index: 1000;
-      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+      position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+      border-top: 1px solid var(--border); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+      display: none; justify-content: center; z-index: 1000;
     }
-    .send {
-      width: 100%; 
-      height: 46px;
-      background: var(--accent); 
-      color: #fff;
-      border: none; 
-      border-radius: 10px;
-      font-size: 14px; 
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .send:disabled { opacity: 0.5; cursor: default; }
-
-    #blockScreen {
-      display: none;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    #blockScreen h2 { font-size: 18px; margin-bottom: 10px; }
-    #blockScreen p { font-size: 14px; color: var(--muted); }
-
-    #globalLoader {
-      text-align: center;
-      padding: 50px 20px;
-      font-size: 14px;
-      color: var(--muted);
-    }
+    .send { width: 100%; height: 46px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .send:disabled { opacity: 0.5; }
+    #globalLoader { text-align: center; padding: 50px 20px; font-size: 14px; color: var(--muted); }
   </style>
 </head>
 <body>
 
-<!-- Екран блокування (для звичайного браузера) -->
-<div id="blockScreen">
-  <h2 id="txt_block_screen_title"></h2>
-  <p id="txt_block_screen_desc"></p>
+<div id="globalLoader">Завантаження форми...</div>
+
+<!-- Екран успіху -->
+<div class="screen-card" id="successBox">
+  <h2 style="color: var(--success);">✅ Заявку прийнято!</h2>
+  <p id="successMsg">Вашу заявку успішно зареєстровано. Очікуйте на зв'язок від координатора.</p>
 </div>
 
-<!-- Спінер/повідомлення початкового завантаження -->
-<div id="globalLoader">Завантаження...</div>
-
-<!-- Основна форма (тексти підставляються з Google Таблиці) -->
 <div class="wrap" id="mainWrap">
   <div class="top">
     <h1 id="txt_header_title"></h1>
@@ -299,11 +147,27 @@
     <div class="section-title" id="txt_sec_user"></div>
     <div class="field">
       <label for="fio" id="txt_lbl_fio"></label>
-      <input id="fio" type="text">
+      <input id="fio" type="text" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="phone" id="txt_lbl_phone"></label>
+      <input id="phone" type="tel" inputmode="tel">
     </div>
     <div class="field">
       <label for="inn" id="txt_lbl_inn"></label>
-      <input id="inn" type="number" inputmode="numeric">
+      <input id="inn" type="text" inputmode="numeric" maxlength="10" pattern="\d{10}">
+    </div>
+    <div class="field">
+      <label for="address" id="txt_lbl_address"></label>
+      <input id="address" type="text" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="familyCount" id="txt_lbl_family"></label>
+      <input id="familyCount" type="number" min="1" max="20" value="1">
+    </div>
+    <div class="field">
+      <label for="childrenNote" id="txt_lbl_children"></label>
+      <input id="childrenNote" type="text" autocomplete="off">
     </div>
     <div class="field">
       <label for="category" id="txt_lbl_category"></label>
@@ -343,55 +207,61 @@
 </div>
 
 <script>
+// ВСТАВТЕ ВАШЕ ПОСИЛАННЯ НА APPS SCRIPT WEB APP
 const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
 const MAX_PHOTOS = 10;
-
 const tg = window.Telegram?.WebApp;
 
-// Перевірка Telegram WebApp
-const isTg = !!(tg && tg.initData && tg.initData.length > 5);
-if (!isTg) {
-  document.getElementById("globalLoader").style.display = "none";
-  document.getElementById("blockScreen").style.display = "block";
-  document.getElementById("txt_block_screen_title").textContent = "⛔ Доступ заборонено";
-  document.getElementById("txt_block_screen_desc").innerHTML = "Ця форма доступна виключно всередині Telegram-бота.<br>Будь ласка, відкрийте бота в додатку Telegram.";
-} else {
-  try { tg.ready(); tg.expand(); } catch (_) {}
-}
+try { tg?.ready(); tg?.expand(); } catch (_) {}
 
 let items = [];
 let cart = {};
 let photos = [];
 let appTexts = {};
 
-// Підстановка всіх текстів із таблиці в DOM-елементи
+function getItemMax(it) {
+  if (typeof it.max === "number" && !isNaN(it.max)) return it.max;
+  if (typeof it.limit === "number" && !isNaN(it.limit) && typeof it.stock === "number" && !isNaN(it.stock)) {
+    return Math.min(it.stock, it.limit);
+  }
+  if (typeof it.limit === "number" && !isNaN(it.limit)) return it.limit;
+  return 1;
+}
+
 function applyTexts(texts) {
   if (!texts) return;
   appTexts = texts;
-
-  document.title = texts.page_title || "";
-  document.getElementById("txt_page_title").textContent = texts.page_title || "";
-  document.getElementById("txt_block_screen_title").textContent = texts.block_screen_title || "";
-  document.getElementById("txt_block_screen_desc").innerHTML = (texts.block_screen_desc || "").replace(/\n/g, "<br>");
+  document.title = texts.page_title || "Гуманітарна допомога";
+  document.getElementById("txt_page_title").textContent = texts.page_title || "Гуманітарна допомога";
   
-  document.getElementById("txt_header_title").textContent = texts.header_title || "";
+  document.getElementById("txt_header_title").textContent = texts.header_title || "Заявка на допомогу";
   document.getElementById("txt_header_sub").textContent = texts.header_sub || "";
-  document.getElementById("txt_sec_user").textContent = texts.sec_user || "";
-  document.getElementById("txt_lbl_fio").textContent = texts.lbl_fio || "";
-  document.getElementById("fio").placeholder = texts.plh_fio || "";
-  document.getElementById("txt_lbl_inn").textContent = texts.lbl_inn || "";
-  document.getElementById("inn").placeholder = texts.plh_inn || "";
-  document.getElementById("txt_lbl_category").textContent = texts.lbl_category || "";
+  document.getElementById("txt_sec_user").textContent = texts.sec_user || "👤 Дані заявника";
   
-  document.getElementById("txt_sec_docs").textContent = texts.sec_docs || "";
-  document.getElementById("uploadLabel").textContent = texts.btn_upload || "";
-  document.getElementById("txt_sub_upload").textContent = texts.sub_upload || "";
+  document.getElementById("txt_lbl_fio").textContent = texts.lbl_fio || "ПІБ";
+  document.getElementById("fio").placeholder = texts.plh_fio || "Шевченко Тарас Григорович";
   
-  document.getElementById("txt_sec_catalog").textContent = texts.sec_catalog || "";
-  document.getElementById("txt_consent_text").textContent = texts.consent_text || "";
-  document.getElementById("sendBtn").textContent = texts.btn_submit || "";
+  document.getElementById("txt_lbl_phone").textContent = texts.lbl_phone || "Номер телефону";
+  document.getElementById("phone").placeholder = texts.plh_phone || "+380501234567";
+  
+  document.getElementById("txt_lbl_inn").textContent = texts.lbl_inn || "ІПН (10 цифр)";
+  document.getElementById("inn").placeholder = texts.plh_inn || "1234567890";
+  
+  document.getElementById("txt_lbl_address").textContent = texts.lbl_address || "Адреса проживання";
+  document.getElementById("address").placeholder = texts.plh_address || "м. Київ, вул. Хрещатик, 1";
+  
+  document.getElementById("txt_lbl_family").textContent = texts.lbl_family || "Кількість членів родини";
+  document.getElementById("txt_lbl_children").textContent = texts.lbl_children || "Діти та їх вік (за наявності)";
+  document.getElementById("childrenNote").placeholder = texts.plh_children || "2 дітей: 4 та 9 років";
 
-  // Динамічний випадаючий список категорій із таблиці
+  document.getElementById("txt_lbl_category").textContent = texts.lbl_category || "Категорія";
+  document.getElementById("txt_sec_docs").textContent = texts.sec_docs || "📄 Документи";
+  document.getElementById("uploadLabel").textContent = texts.btn_upload || "Обрати фото";
+  document.getElementById("txt_sub_upload").textContent = texts.sub_upload || "";
+  document.getElementById("txt_sec_catalog").textContent = texts.sec_catalog || "📦 Доступна допомога";
+  document.getElementById("txt_consent_text").textContent = texts.consent_text || "";
+  document.getElementById("sendBtn").textContent = texts.btn_submit || "НАДІСЛАТИ ЗАЯВКУ";
+
   if (texts.categories_list) {
     const cats = texts.categories_list.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
     const sel = document.getElementById("category");
@@ -405,16 +275,12 @@ function applyTexts(texts) {
   }
 }
 
-// Завантаження каталогу + текстів з Apps Script
 function initApp() {
   fetch(API_URL)
-    .then(r => r.json())
-    .then(res => {
+    .then(async r => {
+      const res = await r.json();
       document.getElementById("globalLoader").style.display = "none";
-
-      if (res.texts) {
-        applyTexts(res.texts);
-      }
+      if (res.texts) applyTexts(res.texts);
 
       if (res.status === "success" && res.items && res.items.length) {
         items = res.items;
@@ -427,31 +293,32 @@ function initApp() {
       }
     })
     .catch(e => {
-      document.getElementById("globalLoader").textContent = "Помилка зв'язку з сервером. Спробуйте пізніше.";
+      document.getElementById("globalLoader").textContent = "Помилка завантаження каталогу.";
       document.getElementById("globalLoader").style.display = "block";
     });
 }
-if (isTg) initApp();
+
+initApp();
 
 function renderCatalog() {
   const c = document.getElementById("catalog");
   c.innerHTML = "";
-
   items.forEach(it => {
     cart[it.id] = 0;
-    const mx = Math.min(it.stock, it.limit);
+    const mx = getItemMax(it);
+    it.max = mx;
 
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
       <div class="item-info">
         <div class="item-name">${it.name}</div>
-        <div class="item-meta">Залишок: ${it.stock} · Ліміт: ${mx} шт.</div>
+        <div class="item-meta">Ліміт: до ${mx} шт.</div>
       </div>
       <div class="qty">
         <button type="button" id="m_${it.id}" disabled onclick="step('${it.id}', -1)">−</button>
-        <input id="q_${it.id}" type="number" value="0" min="0" max="${mx}" inputmode="numeric" 
-               oninput="onInputQty('${it.id}', this)" onblur="onBlurQty('${it.id}', this)">
+        <input id="q_${it.id}" type="number" inputmode="numeric" value="0" min="0" max="${mx}" 
+               oninput="onQtyInput('${it.id}', this.value)" onblur="onQtyBlur('${it.id}', this)">
         <button type="button" id="a_${it.id}" onclick="step('${it.id}', 1)">+</button>
       </div>
     `;
@@ -462,42 +329,52 @@ function renderCatalog() {
 function step(id, d) {
   const it = items.find(x => String(x.id) === String(id));
   if (!it) return;
-  const mx = Math.min(it.stock, it.limit);
+  const mx = getItemMax(it);
   let v = (cart[id] || 0) + d;
   if (v < 0) v = 0;
   if (v > mx) v = mx;
-  cart[id] = v;
-  document.getElementById("q_" + id).value = v;
-  document.getElementById("m_" + id).disabled = (v === 0);
-  document.getElementById("a_" + id).disabled = (v === mx);
-  refreshBtn();
+  updateQtyState(id, v, mx);
 }
 
-function onInputQty(id, el) {
+function onQtyInput(id, rawVal) {
   const it = items.find(x => String(x.id) === String(id));
   if (!it) return;
-  const mx = Math.min(it.stock, it.limit);
-
-  let v = parseInt(el.value, 10);
-  if (isNaN(v) || v < 0) v = 0;
-  if (v > mx) {
-    v = mx;
-    el.value = mx;
-  }
-  cart[id] = v;
-  document.getElementById("m_" + id).disabled = (v <= 0);
-  document.getElementById("a_" + id).disabled = (v >= mx);
-  refreshBtn();
-}
-
-function onBlurQty(id, el) {
-  if (el.value === "" || isNaN(parseInt(el.value, 10))) {
-    el.value = 0;
+  const mx = getItemMax(it);
+  
+  if (rawVal === "") {
     cart[id] = 0;
     document.getElementById("m_" + id).disabled = true;
     document.getElementById("a_" + id).disabled = false;
     refreshBtn();
+    return;
   }
+
+  let val = parseInt(rawVal, 10);
+  if (isNaN(val) || val < 0) val = 0;
+  if (val > mx) val = mx;
+
+  updateQtyState(id, val, mx);
+}
+
+function onQtyBlur(id, inputElem) {
+  if (inputElem.value === "" || isNaN(parseInt(inputElem.value, 10))) {
+    inputElem.value = 0;
+    cart[id] = 0;
+    const it = items.find(x => String(x.id) === String(id));
+    const mx = it ? getItemMax(it) : 1;
+    updateQtyState(id, 0, mx);
+  }
+}
+
+function updateQtyState(id, v, mx) {
+  cart[id] = v;
+  const input = document.getElementById("q_" + id);
+  if (input) input.value = v;
+  const btnMinus = document.getElementById("m_" + id);
+  if (btnMinus) btnMinus.disabled = (v <= 0);
+  const btnPlus = document.getElementById("a_" + id);
+  if (btnPlus) btnPlus.disabled = (v >= mx);
+  refreshBtn();
 }
 
 function refreshBtn() {
@@ -506,7 +383,6 @@ function refreshBtn() {
   document.getElementById("sendBtn").textContent = t ? `${baseTxt} (${t})` : baseTxt;
 }
 
-/* Обробка та стиснення фото */
 document.getElementById("photoInput").addEventListener("change", async function(e) {
   const files = e.target.files;
   if (!files || !files.length) return;
@@ -516,9 +392,7 @@ document.getElementById("photoInput").addEventListener("change", async function(
     if (photos.length >= MAX_PHOTOS) break;
     try {
       const b64 = await compressPhoto(f);
-      if (b64) {
-        photos.push({ name: f.name, base64: b64, thumb: b64 });
-      }
+      if (b64) photos.push({ name: f.name, base64: b64, thumb: b64 });
     } catch (_) {}
   }
   this.value = "";
@@ -529,7 +403,6 @@ document.getElementById("photoInput").addEventListener("change", async function(
 function renderPhotos() {
   const list = document.getElementById("photoList");
   list.innerHTML = "";
-
   photos.forEach((p, i) => {
     const row = document.createElement("div");
     row.className = "photo-row";
@@ -540,7 +413,6 @@ function renderPhotos() {
     `;
     list.appendChild(row);
   });
-
   document.getElementById("uploadZone").style.display = photos.length >= MAX_PHOTOS ? "none" : "";
 }
 
@@ -562,8 +434,7 @@ function compressPhoto(file) {
           else { w = Math.round(w * MAX / h); h = MAX; }
         }
         const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h);
         resolve(canvas.toDataURL("image/jpeg", 0.6));
@@ -576,32 +447,49 @@ function compressPhoto(file) {
   });
 }
 
-/* Відправка форми */
 async function submitForm() {
   hideErr();
-
   const fio = document.getElementById("fio").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const inn = document.getElementById("inn").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const familyCount = document.getElementById("familyCount").value.trim();
+  const childrenNote = document.getElementById("childrenNote").value.trim();
   const cat = document.getElementById("category").value;
 
   if (fio.length < 5 || fio.split(/\s+/).length < 2) {
     document.getElementById("fio").focus();
     return showErr(appTexts.err_fio);
   }
-  if (!/^\d{10,12}$/.test(inn)) {
+  if (phone.replace(/\D/g, "").length < 9) {
+    document.getElementById("phone").focus();
+    return showErr(appTexts.err_phone);
+  }
+  // Перевірка: тільки 10 цифр
+  if (!/^\d{10}$/.test(inn)) {
     document.getElementById("inn").focus();
-    return showErr(appTexts.err_inn);
+    return showErr(appTexts.err_inn || "ІПН повинен містити рівно 10 цифр.");
   }
-  if (!photos.length) {
-    return showErr(appTexts.err_photo);
+  if (address.length < 5) {
+    document.getElementById("address").focus();
+    return showErr(appTexts.err_address || "Вкажіть повну адресу проживання.");
   }
+  if (!photos.length) return showErr(appTexts.err_photo);
 
   const cartArr = Object.entries(cart)
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({ id: String(k), qty: v }));
 
-  if (!cartArr.length) {
-    return showErr(appTexts.err_cart);
+  if (!cartArr.length) return showErr(appTexts.err_cart);
+
+  for (let c of cartArr) {
+    const it = items.find(x => String(x.id) === String(c.id));
+    if (it) {
+      const mx = getItemMax(it);
+      if (c.qty > mx) {
+        return showErr(`Перевищено доступний ліміт (${mx} шт.) для товару "${it.name}"`);
+      }
+    }
   }
 
   if (!document.getElementById("consentCheck").checked) {
@@ -614,13 +502,14 @@ async function submitForm() {
   btn.textContent = "Надсилання…";
 
   try {
-    const u = tg?.initDataUnsafe?.user;
-
     const body = {
       initData: tg?.initData || "",
-      userId: u?.id || 0,
       fio: fio,
+      phone: phone,
       inn: inn,
+      address: address,
+      familyCount: familyCount,
+      childrenNote: childrenNote,
       category: cat,
       photos: photos.map(p => ({ base64: p.base64, name: p.name })),
       cart: cartArr,
@@ -634,12 +523,15 @@ async function submitForm() {
     });
 
     const ans = await res.json();
-
     if (ans.status === "success") {
-      if (tg && tg.close) {
+      if (tg && tg.close && tg.initData) {
         tg.close();
       } else {
-        window.close();
+        document.getElementById("mainWrap").style.display = "none";
+        document.getElementById("barWrap").style.display = "none";
+        document.getElementById("successBox").style.display = "block";
+        document.getElementById("successMsg").textContent = `Номер вашої заявки: ${ans.requestId}. Заявку передано координатору.`;
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } else {
       btn.disabled = false;
@@ -649,7 +541,7 @@ async function submitForm() {
   } catch (err) {
     btn.disabled = false;
     refreshBtn();
-    showErr("Помилка відправки. Перевірте з'єднання з мережею.");
+    showErr("Помилка відправки. Перевірте з'єднання.");
   }
 }
 
@@ -657,15 +549,11 @@ function showErr(m) {
   const el = document.getElementById("err");
   el.textContent = m || "Помилка валідації";
   el.style.display = "block";
-  
-  setTimeout(() => {
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 50);
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function hideErr() {
-  const el = document.getElementById("err");
-  el.style.display = "none";
+  document.getElementById("err").style.display = "none";
 }
 </script>
 </body>
