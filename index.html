@@ -123,7 +123,7 @@
     .send:disabled { opacity: 0.5; }
     #globalLoader { text-align: center; padding: 50px 20px; font-size: 14px; color: var(--muted); }
 
-    /* Модальне вікно */
+    /* Попап положення */
     .modal-backdrop {
       display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.65); z-index: 2000;
@@ -156,11 +156,53 @@
       padding: 8px 16px; background: var(--accent); color: #fff;
       border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
     }
+
+    /* ==================== ПОВНОЕКРАННИЙ ЛОАДЕР ВІДПРАВКИ ==================== */
+    .loading-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.82); z-index: 3000;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; flex-direction: column;
+      padding: 24px; text-align: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .spinner {
+      width: 56px; height: 56px;
+      border: 4px solid rgba(255, 255, 255, 0.15);
+      border-top-color: var(--accent);
+      border-right-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 24px;
+      box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-title {
+      font-size: 19px; font-weight: 700; color: #ffffff;
+      margin-bottom: 10px; letter-spacing: 0.2px;
+    }
+    .loading-sub {
+      font-size: 14px; color: #94a3b8; max-width: 300px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
 
 <div id="globalLoader">Завантаження форми...</div>
+
+<!-- Повноекранна анімація відправки -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-title" id="loadingTitle">Надсилання заявки…</div>
+  <div class="loading-sub" id="loadingSub">Завантажуємо документи та реєструємо замовлення. Будь ласка, не закривайте екран.</div>
+</div>
 
 <!-- Екран успіху -->
 <div class="screen-card" id="successBox">
@@ -239,7 +281,7 @@
   <button class="send" id="sendBtn" onclick="submitForm()">НАДІСЛАТИ ЗАЯВКУ</button>
 </div>
 
-<!-- Модалка -->
+<!-- Модалка положення -->
 <div class="modal-backdrop" id="consentModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -259,6 +301,7 @@ window.onerror = function(msg, url, line) {
   if (l) l.innerHTML = "<div style='color:red;'>Помилка JS: " + msg + " (рядок " + line + ")</div>";
 };
 
+// ВСТАВТЕ ВАШЕ ПОСИЛАННЯ З APPS SCRIPT
 const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
 const MAX_PHOTOS = 10;
 const tg = window.Telegram?.WebApp;
@@ -267,7 +310,7 @@ try { tg?.ready(); tg?.expand(); } catch (_) {}
 
 let items = [];
 let cart = {};
-let photos = []; // { id, name, previewUrl, base64, promise }
+let photos = [];
 let appTexts = {};
 
 const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.textContent = val; };
@@ -485,7 +528,6 @@ function refreshBtn() {
   if (sendBtn) sendBtn.textContent = t ? `${baseTxt} (${t})` : baseTxt;
 }
 
-// ==================== МИТТЄВЕ ПРЕВ'Ю ТА ФОНОВЕ СТИСНЕННЯ ====================
 document.addEventListener("DOMContentLoaded", function() {
   const pInput = document.getElementById("photoInput");
   if (pInput) {
@@ -496,7 +538,6 @@ document.addEventListener("DOMContentLoaded", function() {
       for (const file of files) {
         if (photos.length >= MAX_PHOTOS) break;
         
-        // 1. Миттєво створюємо локальне прев'ю (0 затримок)
         const photoObj = {
           id: Date.now() + "_" + Math.random().toString(36).substr(2, 5),
           name: file.name,
@@ -505,7 +546,6 @@ document.addEventListener("DOMContentLoaded", function() {
           promise: null
         };
 
-        // 2. Запускаємо стиснення у фоні
         photoObj.promise = compressPhoto(file).then(b64 => {
           photoObj.base64 = b64;
           return b64;
@@ -582,6 +622,7 @@ async function submitForm() {
   const childrenNote = document.getElementById("childrenNote").value.trim();
   const cat = document.getElementById("category").value.trim();
 
+  // Валідація
   if (fio.length < 5 || fio.split(/\s+/).length < 2) {
     document.getElementById("fio").focus();
     return showErr(appTexts.err_fio || "Вкажіть повне ПІБ (мінімум 2 слова).");
@@ -630,25 +671,40 @@ async function submitForm() {
     return showErr(appTexts.err_consent || "Необхідно надати згоду на обробку даних!");
   }
 
+  // ВМИКАЄМО ПОВНОЕКРАННИЙ ЛОАДЕР
+  const overlay = document.getElementById("loadingOverlay");
+  const loadingTitle = document.getElementById("loadingTitle");
+  const loadingSub = document.getElementById("loadingSub");
   const btn = document.getElementById("sendBtn");
+  
   btn.disabled = true;
-  btn.textContent = "Обробка фото…";
+  overlay.style.display = "flex";
+  loadingTitle.textContent = "Обробка фото…";
+  loadingSub.textContent = "Готуємо документи до безпечного завантаження.";
 
-  // Дочікуємося завершення фонового стиснення фото (якщо воно ще триває)
   await Promise.all(photos.map(p => p.promise));
   const validPhotos = photos.filter(p => p.base64).map(p => ({ name: p.name, base64: p.base64 }));
 
   if (!validPhotos.length) {
+    overlay.style.display = "none";
     btn.disabled = false;
     refreshBtn();
     return showErr("Не вдалося обробити фотографії. Спробуйте ще раз.");
   }
 
-  btn.textContent = "Надсилання…";
+  loadingTitle.textContent = "Надсилання заявки…";
+  loadingSub.textContent = "Завантажуємо документи та реєструємо замовлення. Будь ласка, не закривайте екран.";
 
   try {
+    const tgApp = window.Telegram?.WebApp;
+    const tgUser = tgApp?.initDataUnsafe?.user;
+    const directTgId = tgUser?.id ? String(tgUser.id) : "";
+    const tgUsername = tgUser?.username ? `@${tgUser.username}` : "";
+
     const body = {
-      initData: tg?.initData || "",
+      initData: tgApp?.initData || "",
+      telegramId: directTgId,
+      telegramUsername: tgUsername,
       fio: fio,
       phone: phone,
       inn: inn,
@@ -668,8 +724,10 @@ async function submitForm() {
     });
 
     const ans = await res.json();
+    overlay.style.display = "none";
+
     if (ans.status === "success") {
-      if (tg && tg.close && tg.initData) {
+      if (tg && tg.close && (directTgId || tg.initData)) {
         tg.close();
       } else {
         document.getElementById("mainWrap").style.display = "none";
@@ -684,6 +742,7 @@ async function submitForm() {
       showErr(ans.message || "Помилка прийому заявки.");
     }
   } catch (err) {
+    overlay.style.display = "none";
     btn.disabled = false;
     refreshBtn();
     showErr("Помилка відправки. Перевірте з'єднання.");
