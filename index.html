@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title id="txt_page_title">Гуманітарна допомога</title>
+  <title>Гуманітарна допомога</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -36,7 +36,6 @@
       padding: 12px;
       -webkit-font-smoothing: antialiased;
     }
-
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -46,8 +45,7 @@
       -moz-appearance: textfield;
       appearance: textfield;
     }
-
-    .wrap { width: 100%; max-width: 100%; padding-bottom: 120px; display: none; }
+    .wrap { width: 100%; padding-bottom: 120px; display: none; }
     .top { margin-bottom: 16px; }
     .top h1 { font-size: 19px; font-weight: 700; line-height: 1.3; }
     .top p { font-size: 13px; color: var(--muted); margin-top: 3px; }
@@ -107,16 +105,15 @@
     .consent-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
     .consent-block.has-error { border-color: var(--danger); background: var(--danger-bg); }
     .consent-label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 12px; line-height: 1.4; }
-    .consent-label input[type="checkbox"] { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--accent); }
+    .consent-label input[type="checkbox"] { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--accent); flex-shrink: 0; }
+    .consent-label a { color: var(--accent); text-decoration: underline; font-weight: 600; cursor: pointer; }
     .error { display: none; background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger); padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
-    
     .screen-card {
       display: none; text-align: center; padding: 40px 20px; background: var(--card);
       border-radius: var(--radius); border: 1px solid var(--border); margin-top: 20px;
     }
     .screen-card h2 { font-size: 20px; margin-bottom: 8px; }
     .screen-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
-    
     .bar {
       position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
       border-top: 1px solid var(--border); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
@@ -125,6 +122,40 @@
     .send { width: 100%; height: 46px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
     .send:disabled { opacity: 0.5; }
     #globalLoader { text-align: center; padding: 50px 20px; font-size: 14px; color: var(--muted); }
+
+    /* Модальне вікно */
+    .modal-backdrop {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65); z-index: 2000;
+      align-items: center; justify-content: center; padding: 16px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-box {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      width: 100%; max-width: 520px; max-height: 85vh; display: flex; flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden;
+    }
+    .modal-header {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; font-size: 20px; color: var(--muted);
+      cursor: pointer; padding: 0 4px; line-height: 1;
+    }
+    .modal-body {
+      padding: 16px; overflow-y: auto; font-size: 13px; line-height: 1.6;
+      color: var(--text); white-space: pre-line;
+    }
+    .modal-footer {
+      padding: 12px 16px; border-top: 1px solid var(--border); text-align: right;
+      background: var(--bg);
+    }
+    .modal-btn {
+      padding: 8px 16px; background: var(--accent); color: #fff;
+      border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -139,55 +170,55 @@
 
 <div class="wrap" id="mainWrap">
   <div class="top">
-    <h1 id="txt_header_title"></h1>
-    <p id="txt_header_sub"></p>
+    <h1 id="txt_header_title">Заявка на допомогу</h1>
+    <p id="txt_header_sub">Заповніть форму для отримання ТМЦ</p>
   </div>
 
   <div class="section">
-    <div class="section-title" id="txt_sec_user"></div>
+    <div class="section-title" id="txt_sec_user">👤 Дані заявника</div>
     <div class="field">
-      <label for="fio" id="txt_lbl_fio"></label>
-      <input id="fio" type="text" autocomplete="off">
+      <label for="fio" id="txt_lbl_fio">ПІБ</label>
+      <input id="fio" type="text" placeholder="Шевченко Тарас Григорович" autocomplete="off">
     </div>
     <div class="field">
-      <label for="phone" id="txt_lbl_phone"></label>
-      <input id="phone" type="tel" inputmode="tel">
+      <label for="phone" id="txt_lbl_phone">Номер телефону</label>
+      <input id="phone" type="tel" inputmode="tel" placeholder="+380501234567">
     </div>
     <div class="field">
-      <label for="inn" id="txt_lbl_inn"></label>
-      <input id="inn" type="text" inputmode="numeric" maxlength="10" pattern="\d{10}">
+      <label for="inn" id="txt_lbl_inn">ІПН (10 цифр)</label>
+      <input id="inn" type="text" inputmode="numeric" maxlength="10" placeholder="1234567890">
     </div>
     <div class="field">
-      <label for="address" id="txt_lbl_address"></label>
-      <input id="address" type="text" autocomplete="off">
+      <label for="address" id="txt_lbl_address">Адреса проживання</label>
+      <input id="address" type="text" placeholder="м. Київ, вул. Хрещатик, 1" autocomplete="off">
     </div>
     <div class="field">
-      <label for="familyCount" id="txt_lbl_family"></label>
+      <label for="familyCount" id="txt_lbl_family">Кількість членів родини</label>
       <input id="familyCount" type="number" min="1" max="20" value="1">
     </div>
     <div class="field">
-      <label for="childrenNote" id="txt_lbl_children"></label>
-      <input id="childrenNote" type="text" autocomplete="off">
+      <label for="childrenNote" id="txt_lbl_children">Діти та їх вік (за наявності)</label>
+      <input id="childrenNote" type="text" placeholder="2 дітей: 4 та 9 років" autocomplete="off">
     </div>
     <div class="field">
-      <label for="category" id="txt_lbl_category"></label>
+      <label for="category" id="txt_lbl_category">Категорія</label>
       <select id="category"></select>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title" id="txt_sec_docs"></div>
+    <div class="section-title" id="txt_sec_docs">📄 Документи</div>
     <label class="upload-area" id="uploadZone">
       <input type="file" id="photoInput" accept="image/*" multiple>
       <div class="icon">📷</div>
-      <div class="label" id="uploadLabel"></div>
-      <div class="sub" id="txt_sub_upload"></div>
+      <div class="label" id="uploadLabel">Обрати фото</div>
+      <div class="sub" id="txt_sub_upload">Паспорт, довідка ВПО — до 10 шт.</div>
     </label>
     <div class="photo-list" id="photoList"></div>
   </div>
 
   <div class="section">
-    <div class="section-title" id="txt_sec_catalog"></div>
+    <div class="section-title" id="txt_sec_catalog">📦 Доступна допомога</div>
     <div id="catalog"></div>
   </div>
 
@@ -195,7 +226,9 @@
     <div class="consent-block" id="consentBlock">
       <label class="consent-label">
         <input type="checkbox" id="consentCheck" onchange="document.getElementById('consentBlock').classList.remove('has-error'); hideErr();">
-        <span id="txt_consent_text"></span>
+        <span id="txt_consent_text">
+          Я підтверджую правильність вказаних даних, надаю згоду на фото/відеофіксацію отримання допомоги та обробку моїх персональних даних відповідно до <a href="#" id="openConsentLink">Політики конфіденційності</a>.
+        </span>
       </label>
     </div>
     <div id="err" class="error"></div>
@@ -203,11 +236,29 @@
 </div>
 
 <div class="bar" id="barWrap">
-  <button class="send" id="sendBtn" onclick="submitForm()"></button>
+  <button class="send" id="sendBtn" onclick="submitForm()">НАДІСЛАТИ ЗАЯВКУ</button>
+</div>
+
+<!-- Модалка -->
+<div class="modal-backdrop" id="consentModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Політика конфіденційності</h3>
+      <button class="modal-close" type="button" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalTextBody">Завантаження тексту...</div>
+    <div class="modal-footer">
+      <button class="modal-btn" type="button" onclick="closeModal()">Зрозуміло</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ВСТАВТЕ ВАШЕ ПОСИЛАННЯ НА APPS SCRIPT WEB APP
+window.onerror = function(msg, url, line) {
+  const l = document.getElementById("globalLoader");
+  if (l) l.innerHTML = "<div style='color:red;'>Помилка JS: " + msg + " (рядок " + line + ")</div>";
+};
+
 const API_URL = "https://script.google.com/macros/s/AKfycbwI0cBG4pvkhDl8-j6Pz_2N-daPYRl965WMmeAdDDVdMwZUL-X_QwcoamIZ6j8hVZjT/exec";
 const MAX_PHOTOS = 10;
 const tg = window.Telegram?.WebApp;
@@ -216,96 +267,147 @@ try { tg?.ready(); tg?.expand(); } catch (_) {}
 
 let items = [];
 let cart = {};
-let photos = [];
+let photos = []; // { id, name, previewUrl, base64, promise }
 let appTexts = {};
 
-function getItemMax(it) {
-  if (typeof it.max === "number" && !isNaN(it.max)) return it.max;
-  if (typeof it.limit === "number" && !isNaN(it.limit) && typeof it.stock === "number" && !isNaN(it.stock)) {
-    return Math.min(it.stock, it.limit);
-  }
-  if (typeof it.limit === "number" && !isNaN(it.limit)) return it.limit;
-  return 1;
-}
+const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.textContent = val; };
+const setPlh = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.placeholder = val; };
 
 function applyTexts(texts) {
-  if (!texts) return;
+  if (!texts || typeof texts !== "object") return;
   appTexts = texts;
-  document.title = texts.page_title || "Гуманітарна допомога";
-  document.getElementById("txt_page_title").textContent = texts.page_title || "Гуманітарна допомога";
-  
-  document.getElementById("txt_header_title").textContent = texts.header_title || "Заявка на допомогу";
-  document.getElementById("txt_header_sub").textContent = texts.header_sub || "";
-  document.getElementById("txt_sec_user").textContent = texts.sec_user || "👤 Дані заявника";
-  
-  document.getElementById("txt_lbl_fio").textContent = texts.lbl_fio || "ПІБ";
-  document.getElementById("fio").placeholder = texts.plh_fio || "Шевченко Тарас Григорович";
-  
-  document.getElementById("txt_lbl_phone").textContent = texts.lbl_phone || "Номер телефону";
-  document.getElementById("phone").placeholder = texts.plh_phone || "+380501234567";
-  
-  document.getElementById("txt_lbl_inn").textContent = texts.lbl_inn || "ІПН (10 цифр)";
-  document.getElementById("inn").placeholder = texts.plh_inn || "1234567890";
-  
-  document.getElementById("txt_lbl_address").textContent = texts.lbl_address || "Адреса проживання";
-  document.getElementById("address").placeholder = texts.plh_address || "м. Київ, вул. Хрещатик, 1";
-  
-  document.getElementById("txt_lbl_family").textContent = texts.lbl_family || "Кількість членів родини";
-  document.getElementById("txt_lbl_children").textContent = texts.lbl_children || "Діти та їх вік (за наявності)";
-  document.getElementById("childrenNote").placeholder = texts.plh_children || "2 дітей: 4 та 9 років";
 
-  document.getElementById("txt_lbl_category").textContent = texts.lbl_category || "Категорія";
-  document.getElementById("txt_sec_docs").textContent = texts.sec_docs || "📄 Документи";
-  document.getElementById("uploadLabel").textContent = texts.btn_upload || "Обрати фото";
-  document.getElementById("txt_sub_upload").textContent = texts.sub_upload || "";
-  document.getElementById("txt_sec_catalog").textContent = texts.sec_catalog || "📦 Доступна допомога";
-  document.getElementById("txt_consent_text").textContent = texts.consent_text || "";
-  document.getElementById("sendBtn").textContent = texts.btn_submit || "НАДІСЛАТИ ЗАЯВКУ";
+  try {
+    if (texts.page_title) document.title = texts.page_title;
+    
+    setTxt("txt_header_title", texts.header_title);
+    setTxt("txt_header_sub", texts.header_sub);
+    setTxt("txt_sec_user", texts.sec_user);
+    
+    setTxt("txt_lbl_fio", texts.lbl_fio);
+    setPlh("fio", texts.plh_fio);
+    
+    setTxt("txt_lbl_phone", texts.lbl_phone);
+    setPlh("phone", texts.plh_phone);
+    
+    setTxt("txt_lbl_inn", texts.lbl_inn);
+    setPlh("inn", texts.plh_inn);
+    
+    setTxt("txt_lbl_address", texts.lbl_address);
+    setPlh("address", texts.plh_address);
+    
+    setTxt("txt_lbl_family", texts.lbl_family);
+    setTxt("txt_lbl_children", texts.lbl_children);
+    setPlh("childrenNote", texts.plh_children);
 
-  if (texts.categories_list) {
-    const cats = texts.categories_list.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
-    const sel = document.getElementById("category");
-    sel.innerHTML = "";
-    cats.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      sel.appendChild(opt);
-    });
+    setTxt("txt_lbl_category", texts.lbl_category);
+    setTxt("txt_sec_docs", texts.sec_docs);
+    setTxt("uploadLabel", texts.btn_upload);
+    setTxt("txt_sub_upload", texts.sub_upload);
+    setTxt("txt_sec_catalog", texts.sec_catalog);
+    
+    const consentEl = document.getElementById("txt_consent_text");
+    if (consentEl && texts.consent_text) {
+      consentEl.innerHTML = texts.consent_text;
+    }
+    
+    const modalBody = document.getElementById("modalTextBody");
+    if (modalBody && texts.consent_full_text) {
+      modalBody.textContent = String(texts.consent_full_text).replace(/\\n/g, "\n");
+    }
+
+    setTxt("sendBtn", texts.btn_submit);
+
+    if (texts.categories_list) {
+      const cats = String(texts.categories_list).split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+      const sel = document.getElementById("category");
+      if (sel && cats.length) {
+        sel.innerHTML = "";
+        cats.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          sel.appendChild(opt);
+        });
+      }
+    }
+  } catch (e) {
+    console.error("Помилка в applyTexts:", e);
   }
 }
 
-function initApp() {
-  fetch(API_URL)
-    .then(async r => {
-      const res = await r.json();
-      document.getElementById("globalLoader").style.display = "none";
-      if (res.texts) applyTexts(res.texts);
+document.addEventListener("click", function(e) {
+  if (e.target && (e.target.id === "openConsentLink" || e.target.closest("#openConsentLink"))) {
+    e.preventDefault();
+    e.stopPropagation();
+    openModal();
+  }
+});
 
-      if (res.status === "success" && res.items && res.items.length) {
-        items = res.items;
-        renderCatalog();
-        document.getElementById("mainWrap").style.display = "block";
-        document.getElementById("barWrap").style.display = "flex";
-      } else {
-        document.getElementById("globalLoader").textContent = res.message || "Немає доступних товарів.";
-        document.getElementById("globalLoader").style.display = "block";
-      }
-    })
-    .catch(e => {
-      document.getElementById("globalLoader").textContent = "Помилка завантаження каталогу.";
-      document.getElementById("globalLoader").style.display = "block";
-    });
+function openModal() {
+  const m = document.getElementById("consentModal");
+  if (m) m.style.display = "flex";
 }
 
-initApp();
+function closeModal() {
+  const m = document.getElementById("consentModal");
+  if (m) m.style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  const modal = document.getElementById("consentModal");
+  if (modal) {
+    modal.addEventListener("click", function(e) {
+      if (e.target === this) closeModal();
+    });
+  }
+});
+
+async function initApp() {
+  const loader = document.getElementById("globalLoader");
+  const mainWrap = document.getElementById("mainWrap");
+  const barWrap = document.getElementById("barWrap");
+
+  try {
+    const response = await fetch(API_URL);
+    const res = await response.json();
+
+    if (res.texts) applyTexts(res.texts);
+
+    if (res.status === "success" && Array.isArray(res.items) && res.items.length > 0) {
+      items = res.items;
+      renderCatalog();
+      if (loader) loader.style.display = "none";
+      if (mainWrap) mainWrap.style.display = "block";
+      if (barWrap) barWrap.style.display = "flex";
+    } else {
+      if (loader) {
+        loader.textContent = res.message || "Немає доступних товарів.";
+        loader.style.display = "block";
+      }
+    }
+  } catch (err) {
+    console.error("Помилка завантаження:", err);
+    if (loader) {
+      loader.innerHTML = "<div style='color:red;'>Помилка завантаження: " + (err.message || "Мережевий збій") + "</div>";
+      loader.style.display = "block";
+    }
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp);
+} else {
+  initApp();
+}
 
 function renderCatalog() {
   const c = document.getElementById("catalog");
+  if (!c) return;
   c.innerHTML = "";
   items.forEach(it => {
     cart[it.id] = 0;
-    const mx = getItemMax(it);
+    const mx = Number(it.max) || 1;
     it.max = mx;
 
     const div = document.createElement("div");
@@ -329,31 +431,31 @@ function renderCatalog() {
 function step(id, d) {
   const it = items.find(x => String(x.id) === String(id));
   if (!it) return;
-  const mx = getItemMax(it);
   let v = (cart[id] || 0) + d;
   if (v < 0) v = 0;
-  if (v > mx) v = mx;
-  updateQtyState(id, v, mx);
+  if (v > it.max) v = it.max;
+  updateQtyState(id, v, it.max);
 }
 
 function onQtyInput(id, rawVal) {
   const it = items.find(x => String(x.id) === String(id));
   if (!it) return;
-  const mx = getItemMax(it);
   
   if (rawVal === "") {
     cart[id] = 0;
-    document.getElementById("m_" + id).disabled = true;
-    document.getElementById("a_" + id).disabled = false;
+    const m = document.getElementById("m_" + id);
+    const a = document.getElementById("a_" + id);
+    if (m) m.disabled = true;
+    if (a) a.disabled = false;
     refreshBtn();
     return;
   }
 
   let val = parseInt(rawVal, 10);
   if (isNaN(val) || val < 0) val = 0;
-  if (val > mx) val = mx;
+  if (val > it.max) val = it.max;
 
-  updateQtyState(id, val, mx);
+  updateQtyState(id, val, it.max);
 }
 
 function onQtyBlur(id, inputElem) {
@@ -361,8 +463,7 @@ function onQtyBlur(id, inputElem) {
     inputElem.value = 0;
     cart[id] = 0;
     const it = items.find(x => String(x.id) === String(id));
-    const mx = it ? getItemMax(it) : 1;
-    updateQtyState(id, 0, mx);
+    updateQtyState(id, 0, it ? it.max : 1);
   }
 }
 
@@ -380,43 +481,67 @@ function updateQtyState(id, v, mx) {
 function refreshBtn() {
   const baseTxt = appTexts.btn_submit || "НАДІСЛАТИ ЗАЯВКУ";
   const t = Object.values(cart).reduce((a, b) => a + b, 0);
-  document.getElementById("sendBtn").textContent = t ? `${baseTxt} (${t})` : baseTxt;
+  const sendBtn = document.getElementById("sendBtn");
+  if (sendBtn) sendBtn.textContent = t ? `${baseTxt} (${t})` : baseTxt;
 }
 
-document.getElementById("photoInput").addEventListener("change", async function(e) {
-  const files = e.target.files;
-  if (!files || !files.length) return;
-  document.getElementById("uploadLabel").textContent = "Обробка…";
+// ==================== МИТТЄВЕ ПРЕВ'Ю ТА ФОНОВЕ СТИСНЕННЯ ====================
+document.addEventListener("DOMContentLoaded", function() {
+  const pInput = document.getElementById("photoInput");
+  if (pInput) {
+    pInput.addEventListener("change", function(e) {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
 
-  for (const f of files) {
-    if (photos.length >= MAX_PHOTOS) break;
-    try {
-      const b64 = await compressPhoto(f);
-      if (b64) photos.push({ name: f.name, base64: b64, thumb: b64 });
-    } catch (_) {}
+      for (const file of files) {
+        if (photos.length >= MAX_PHOTOS) break;
+        
+        // 1. Миттєво створюємо локальне прев'ю (0 затримок)
+        const photoObj = {
+          id: Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+          name: file.name,
+          previewUrl: URL.createObjectURL(file),
+          base64: null,
+          promise: null
+        };
+
+        // 2. Запускаємо стиснення у фоні
+        photoObj.promise = compressPhoto(file).then(b64 => {
+          photoObj.base64 = b64;
+          return b64;
+        });
+
+        photos.push(photoObj);
+      }
+
+      this.value = "";
+      renderPhotos();
+    });
   }
-  this.value = "";
-  document.getElementById("uploadLabel").textContent = appTexts.btn_upload || "Обрати фото";
-  renderPhotos();
 });
 
 function renderPhotos() {
   const list = document.getElementById("photoList");
+  if (!list) return;
   list.innerHTML = "";
   photos.forEach((p, i) => {
     const row = document.createElement("div");
     row.className = "photo-row";
     row.innerHTML = `
-      <img src="${p.thumb}">
+      <img src="${p.previewUrl}">
       <span class="name">${p.name}</span>
-      <button class="del" onclick="delPhoto(${i})">✕</button>
+      <button class="del" type="button" onclick="delPhoto(${i})">✕</button>
     `;
     list.appendChild(row);
   });
-  document.getElementById("uploadZone").style.display = photos.length >= MAX_PHOTOS ? "none" : "";
+  const upZone = document.getElementById("uploadZone");
+  if (upZone) upZone.style.display = photos.length >= MAX_PHOTOS ? "none" : "";
 }
 
 function delPhoto(i) {
+  if (photos[i] && photos[i].previewUrl) {
+    URL.revokeObjectURL(photos[i].previewUrl);
+  }
   photos.splice(i, 1);
   renderPhotos();
 }
@@ -453,19 +578,18 @@ async function submitForm() {
   const phone = document.getElementById("phone").value.trim();
   const inn = document.getElementById("inn").value.trim();
   const address = document.getElementById("address").value.trim();
-  const familyCount = document.getElementById("familyCount").value.trim();
+  const familyCount = parseInt(document.getElementById("familyCount").value, 10);
   const childrenNote = document.getElementById("childrenNote").value.trim();
-  const cat = document.getElementById("category").value;
+  const cat = document.getElementById("category").value.trim();
 
   if (fio.length < 5 || fio.split(/\s+/).length < 2) {
     document.getElementById("fio").focus();
-    return showErr(appTexts.err_fio);
+    return showErr(appTexts.err_fio || "Вкажіть повне ПІБ (мінімум 2 слова).");
   }
   if (phone.replace(/\D/g, "").length < 9) {
     document.getElementById("phone").focus();
-    return showErr(appTexts.err_phone);
+    return showErr(appTexts.err_phone || "Вкажіть коректний номер телефону.");
   }
-  // Перевірка: тільки 10 цифр
   if (!/^\d{10}$/.test(inn)) {
     document.getElementById("inn").focus();
     return showErr(appTexts.err_inn || "ІПН повинен містити рівно 10 цифр.");
@@ -474,31 +598,52 @@ async function submitForm() {
     document.getElementById("address").focus();
     return showErr(appTexts.err_address || "Вкажіть повну адресу проживання.");
   }
-  if (!photos.length) return showErr(appTexts.err_photo);
+  if (isNaN(familyCount) || familyCount < 1 || familyCount > 20) {
+    document.getElementById("familyCount").focus();
+    return showErr("Вкажіть коректну кількість членів родини (від 1 до 20).");
+  }
+  if (!cat) {
+    document.getElementById("category").focus();
+    return showErr("Будь ласка, оберіть вашу категорію.");
+  }
+  if (!photos || !photos.length) {
+    return showErr(appTexts.err_photo || "Долучіть хоча б одне фото документа.");
+  }
 
   const cartArr = Object.entries(cart)
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({ id: String(k), qty: v }));
 
-  if (!cartArr.length) return showErr(appTexts.err_cart);
+  if (!cartArr.length) {
+    return showErr(appTexts.err_cart || "Оберіть хоча б один товар зі списку.");
+  }
 
   for (let c of cartArr) {
     const it = items.find(x => String(x.id) === String(c.id));
-    if (it) {
-      const mx = getItemMax(it);
-      if (c.qty > mx) {
-        return showErr(`Перевищено доступний ліміт (${mx} шт.) для товару "${it.name}"`);
-      }
+    if (it && c.qty > it.max) {
+      return showErr(`Перевищено доступний ліміт (${it.max} шт.) для товару "${it.name}"`);
     }
   }
 
   if (!document.getElementById("consentCheck").checked) {
     document.getElementById("consentBlock").classList.add("has-error");
-    return showErr(appTexts.err_consent);
+    return showErr(appTexts.err_consent || "Необхідно надати згоду на обробку даних!");
   }
 
   const btn = document.getElementById("sendBtn");
   btn.disabled = true;
+  btn.textContent = "Обробка фото…";
+
+  // Дочікуємося завершення фонового стиснення фото (якщо воно ще триває)
+  await Promise.all(photos.map(p => p.promise));
+  const validPhotos = photos.filter(p => p.base64).map(p => ({ name: p.name, base64: p.base64 }));
+
+  if (!validPhotos.length) {
+    btn.disabled = false;
+    refreshBtn();
+    return showErr("Не вдалося обробити фотографії. Спробуйте ще раз.");
+  }
+
   btn.textContent = "Надсилання…";
 
   try {
@@ -511,7 +656,7 @@ async function submitForm() {
       familyCount: familyCount,
       childrenNote: childrenNote,
       category: cat,
-      photos: photos.map(p => ({ base64: p.base64, name: p.name })),
+      photos: validPhotos,
       cart: cartArr,
       consent: true
     };
@@ -547,13 +692,15 @@ async function submitForm() {
 
 function showErr(m) {
   const el = document.getElementById("err");
+  if (!el) return;
   el.textContent = m || "Помилка валідації";
   el.style.display = "block";
   el.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function hideErr() {
-  document.getElementById("err").style.display = "none";
+  const el = document.getElementById("err");
+  if (el) el.style.display = "none";
 }
 </script>
 </body>
